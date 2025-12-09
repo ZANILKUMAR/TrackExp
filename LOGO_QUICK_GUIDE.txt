@@ -1,0 +1,50 @@
+╔══════════════════════════════════════════════════════════════╗
+║                    FinExp Logo Setup                          ║
+║                     Quick Guide                               ║
+╚══════════════════════════════════════════════════════════════╝
+
+📍 STEP 1: SAVE THE LOGO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Save the FinExp logo image as:
+
+    📁 F:\MyProjects\TrackExp\assets\app_icon.png
+
+Requirements:
+  ✓ Format: PNG with transparent background
+  ✓ Size: 1024x1024 pixels (recommended)
+  ✓ Name: EXACTLY "app_icon.png" (don't change!)
+
+
+📍 STEP 2: GENERATE ICONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Run this command in PowerShell:
+
+    flutter pub run flutter_launcher_icons
+
+This generates icons for ALL platforms automatically:
+  ✅ Android
+  ✅ iOS  
+  ✅ Web
+  ✅ Windows
+  ✅ macOS
+
+
+📍 STEP 3: BUILD YOUR APP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Android:   flutter build apk
+iOS:       flutter build ios
+Web:       flutter build web
+
+
+🎨 YOUR FINEXP LOGO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ Blue "F" - Finance branding
+✓ Green upward arrow - Financial growth
+✓ Modern, professional design
+
+
+⚡ THAT'S IT!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Your FinExp app will have a professional logo on all platforms!
+
+For detailed instructions, see: LOGO_SETUP.md

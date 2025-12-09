@@ -1,0 +1,76 @@
+name: track_exp
+description: A personal finance tracker app with offline-first architecture
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # State Management
+  flutter_riverpod: ^2.4.9
+  
+  # Local Storage
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  
+  # UUID Generation
+  uuid: ^4.2.2
+  
+  # Charts
+  fl_chart: ^0.65.0
+  
+  # Date Formatting
+  intl: ^0.19.0
+  
+  # File Picker for Import/Export
+  path_provider: ^2.1.1
+  file_picker: ^8.0.0
+  permission_handler: ^11.1.0
+  csv: ^6.0.0
+  universal_html: ^2.2.4
+  
+  # Icons
+  cupertino_icons: ^1.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  
+  # Hive code generation
+  hive_generator: ^2.0.1
+  build_runner: ^2.4.7
+  
+  # App Icon Generator
+  flutter_launcher_icons: ^0.13.1
+
+flutter:
+  uses-material-design: true
+  
+  # Add custom fonts if needed
+  # fonts:
+  #   - family: Roboto
+  #     fonts:
+  #       - asset: fonts/Roboto-Regular.ttf
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/app_icon.png"
+  min_sdk_android: 21
+  web:
+    generate: true
+    image_path: "assets/app_icon.png"
+    background_color: "#ffffff"
+    theme_color: "#2196F3"
+  windows:
+    generate: false
+    image_path: "assets/app_icon.png"
+    icon_size: 48
+  macos:
+    generate: false
+    image_path: "assets/app_icon.png"
