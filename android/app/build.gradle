@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.trackexp.app"
+    namespace = "com.finexp.app"
     compileSdk = 36
     ndkVersion = "27.0.12077973"
 
@@ -19,7 +19,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.trackexp.app"
+        applicationId = "com.finexp.app"
         minSdkVersion flutter.minSdkVersion
         targetSdk = 34
         versionCode = 1

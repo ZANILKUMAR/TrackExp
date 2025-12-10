@@ -100,6 +100,9 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
         await repository.addTransaction(transaction);
       }
 
+      // Force refresh providers to ensure UI updates on all platforms
+      ref.invalidate(transactionsProvider);
+
       if (!mounted) return;
       
       if (closeAfterSave) {
@@ -563,14 +566,45 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
             const SizedBox(height: 16),
 
             // Date
-            ListTile(
-              title: const Text('Date'),
-              subtitle: Text(FormatHelper.formatDate(_selectedDate)),
-              trailing: const Icon(Icons.calendar_today),
+            InkWell(
               onTap: () => _selectDate(context),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-                side: BorderSide(color: Theme.of(context).colorScheme.outline),
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Theme.of(context).colorScheme.outline),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Date',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            FormatHelper.formatDate(_selectedDate),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      Icons.calendar_today,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 16),

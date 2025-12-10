@@ -259,6 +259,8 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
                 onDismissed: (direction) {
                   ref.read(transactionNotifierProvider.notifier)
                       .deleteTransaction(transaction.id);
+                  // Force refresh providers to ensure UI updates on all platforms
+                  ref.invalidate(transactionsProvider);
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Transaction deleted')),
                   );
@@ -344,6 +346,8 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
                                   if (confirm == true) {
                                     ref.read(transactionNotifierProvider.notifier)
                                         .deleteTransaction(transaction.id);
+                                    // Force refresh providers to ensure UI updates on all platforms
+                                    ref.invalidate(transactionsProvider);
                                     if (context.mounted) {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         const SnackBar(content: Text('Transaction deleted')),

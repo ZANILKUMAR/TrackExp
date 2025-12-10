@@ -85,10 +85,29 @@ class ExportImportService {
   String _exportToCsv(List<Category> categories, List<Transaction> transactions) {
     final dateFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
     
-    // Create CSV with transaction data
-    List<List<dynamic>> rows = [
-      ['Date', 'Type', 'Category', 'Amount', 'Notes'], // Header
-    ];
+    // Create CSV with categories section
+    List<List<dynamic>> rows = [];
+    
+    // Add Categories section
+    rows.add(['CATEGORIES']); // Section marker
+    rows.add(['ID', 'Name', 'Type', 'Color', 'Icon']); // Category header
+    
+    for (var category in categories) {
+      rows.add([
+        category.id,
+        category.name,
+        category.type,
+        category.colorValue?.toString() ?? '',
+        category.iconCodePoint?.toString() ?? '',
+      ]);
+    }
+    
+    // Add empty row as separator
+    rows.add([]);
+    
+    // Add Transactions section
+    rows.add(['TRANSACTIONS']); // Section marker
+    rows.add(['Date', 'Type', 'Category', 'Amount', 'Notes']); // Transaction header
 
     for (var transaction in transactions) {
       final category = categories.firstWhere(
@@ -254,86 +273,164 @@ class ExportImportService {
         throw Exception('CSV file is empty or invalid');
       }
       
+      int categoriesCount = 0;
       int transactionsCount = 0;
       final dateFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
+      Map<String, String> categoryNameToId = {}; // Map to track category names to IDs
       
-      // Skip header row (index 0), process data rows
-      for (int i = 1; i < rows.length; i++) {
-        try {
-          final row = rows[i];
-          if (row.length < 5) continue; // Skip invalid rows
-          
-          // Parse: Date, Type, Category, Amount, Notes
-          final dateStr = row[0].toString();
-          final type = row[1].toString().toLowerCase();
-          final categoryName = row[2].toString();
-          final amount = double.tryParse(row[3].toString()) ?? 0.0;
-          final notes = row.length > 4 ? row[4].toString() : null;
-          
-          // Parse date
-          DateTime date;
-          try {
-            date = dateFormat.parse(dateStr);
-          } catch (e) {
-            // Try alternative date formats
-            try {
-              date = DateTime.parse(dateStr);
-            } catch (e2) {
-              print('Could not parse date: $dateStr, skipping row');
-              continue;
-            }
-          }
-          
-          // Find or create category
-          final categories = categoryRepo.getCategoriesByType(type);
-          Category? category = categories.firstWhere(
-            (c) => c.name.toLowerCase() == categoryName.toLowerCase(),
-            orElse: () => Category(id: '', name: '', type: type),
-          );
-          
-          // If category not found, create a new one
-          if (category.id.isEmpty) {
-            category = Category(
-              id: 'imported_${DateTime.now().millisecondsSinceEpoch}_${categoryName.replaceAll(' ', '_')}',
-              name: categoryName,
-              type: type,
-              colorValue: type == 'income' ? 0xFF95E1D3 : 0xFFFF6B6B,
-            );
-            await categoryRepo.addCategory(category);
-          }
-          
-          // Create transaction
-          final transaction = Transaction(
-            id: 'imported_${DateTime.now().millisecondsSinceEpoch}_$i',
-            type: type,
-            categoryId: category.id,
-            amount: amount,
-            date: date,
-            notes: notes,
-          );
-          
-          // Check if transaction already exists (by checking similar data)
-          final existing = transactionRepository.getAllTransactions().where(
-            (t) => t.amount == transaction.amount && 
-                   t.date.difference(transaction.date).abs() < const Duration(seconds: 1) &&
-                   t.categoryId == transaction.categoryId
-          ).firstOrNull;
-          
-          if (existing == null) {
-            await transactionRepository.addTransaction(transaction);
-            transactionsCount++;
-          }
-        } catch (e) {
-          print('Error importing CSV row $i: $e');
-          // Continue with next row
+      // Find section markers
+      int categoryStartIndex = -1;
+      int transactionStartIndex = -1;
+      
+      for (int i = 0; i < rows.length; i++) {
+        if (rows[i].isNotEmpty && rows[i][0].toString().toUpperCase() == 'CATEGORIES') {
+          categoryStartIndex = i + 1; // Next row is header
+        } else if (rows[i].isNotEmpty && rows[i][0].toString().toUpperCase() == 'TRANSACTIONS') {
+          transactionStartIndex = i + 1; // Next row is header
+          break;
         }
       }
       
-      print('Imported $transactionsCount transactions from CSV');
+      // Import categories if section exists
+      if (categoryStartIndex > 0) {
+        print('Importing categories from CSV...');
+        // Skip header row at categoryStartIndex, process data rows
+        for (int i = categoryStartIndex + 1; i < rows.length; i++) {
+          final row = rows[i];
+          // Stop if we hit empty row or transactions section
+          if (row.isEmpty || (row.isNotEmpty && row[0].toString().toUpperCase() == 'TRANSACTIONS')) {
+            break;
+          }
+          
+          if (row.length < 3) continue; // Need at least ID, Name, Type
+          
+          try {
+            // Parse: ID, Name, Type, Color, Icon
+            final id = row[0].toString();
+            final name = row[1].toString();
+            final type = row[2].toString().toLowerCase();
+            final colorValue = row.length > 3 && row[3].toString().isNotEmpty 
+                ? int.tryParse(row[3].toString()) 
+                : null;
+            final iconCodePoint = row.length > 4 && row[4].toString().isNotEmpty 
+                ? int.tryParse(row[4].toString()) 
+                : null;
+            
+            // Check if category already exists by ID or name
+            final existingById = categoryRepo.getAllCategories()
+                .where((c) => c.id == id)
+                .firstOrNull;
+            final existingByName = categoryRepo.getAllCategories()
+                .where((c) => c.name.toLowerCase() == name.toLowerCase() && c.type == type)
+                .firstOrNull;
+            
+            if (existingById == null && existingByName == null) {
+              final category = Category(
+                id: id,
+                name: name,
+                type: type,
+                colorValue: colorValue,
+                iconCodePoint: iconCodePoint,
+              );
+              await categoryRepo.addCategory(category);
+              categoryNameToId[name.toLowerCase()] = id;
+              categoriesCount++;
+            } else {
+              // Use existing category
+              categoryNameToId[name.toLowerCase()] = existingById?.id ?? existingByName!.id;
+            }
+          } catch (e) {
+            print('Error importing category row $i: $e');
+          }
+        }
+        print('Imported $categoriesCount categories from CSV');
+      }
+      
+      // Import transactions if section exists
+      if (transactionStartIndex > 0) {
+        print('Importing transactions from CSV...');
+        // Skip header row at transactionStartIndex, process data rows
+        for (int i = transactionStartIndex + 1; i < rows.length; i++) {
+          try {
+            final row = rows[i];
+            if (row.length < 4) continue; // Need at least Date, Type, Category, Amount
+            
+            // Parse: Date, Type, Category, Amount, Notes
+            final dateStr = row[0].toString();
+            final type = row[1].toString().toLowerCase();
+            final categoryName = row[2].toString();
+            final amount = double.tryParse(row[3].toString()) ?? 0.0;
+            final notes = row.length > 4 ? row[4].toString() : null;
+            
+            // Parse date
+            DateTime date;
+            try {
+              date = dateFormat.parse(dateStr);
+            } catch (e) {
+              // Try alternative date formats
+              try {
+                date = DateTime.parse(dateStr);
+              } catch (e2) {
+                print('Could not parse date: $dateStr, skipping row');
+                continue;
+              }
+            }
+            
+            // Find category by name (use imported or existing)
+            String? categoryId = categoryNameToId[categoryName.toLowerCase()];
+            if (categoryId == null) {
+              // Try to find existing category
+              final categories = categoryRepo.getCategoriesByType(type);
+              Category? category = categories.firstWhere(
+                (c) => c.name.toLowerCase() == categoryName.toLowerCase(),
+                orElse: () => Category(id: '', name: '', type: type),
+              );
+              
+              // If category not found, create a new one
+              if (category.id.isEmpty) {
+                category = Category(
+                  id: 'imported_${DateTime.now().millisecondsSinceEpoch}_${categoryName.replaceAll(' ', '_')}',
+                  name: categoryName,
+                  type: type,
+                  colorValue: type == 'income' ? 0xFF95E1D3 : 0xFFFF6B6B,
+                );
+                await categoryRepo.addCategory(category);
+              }
+              categoryId = category.id;
+            }
+            
+            // Create transaction
+            final transaction = Transaction(
+              id: 'imported_${DateTime.now().millisecondsSinceEpoch}_$i',
+              type: type,
+              categoryId: categoryId,
+              amount: amount,
+              date: date,
+              notes: notes,
+            );
+            
+            // Check if transaction already exists (by checking similar data)
+            final existing = transactionRepository.getAllTransactions().where(
+              (t) => t.amount == transaction.amount && 
+                     t.date.difference(transaction.date).abs() < const Duration(seconds: 1) &&
+                     t.categoryId == transaction.categoryId
+            ).firstOrNull;
+            
+            if (existing == null) {
+              await transactionRepository.addTransaction(transaction);
+              transactionsCount++;
+            }
+          } catch (e) {
+            print('Error importing transaction row $i: $e');
+            // Continue with next row
+          }
+        }
+        print('Imported $transactionsCount transactions from CSV');
+      }
       
       return {
         'success': true,
-        'categoriesCount': 0, // Categories might have been created, but not tracking exact count
+        'categoriesCount': categoriesCount,
         'transactionsCount': transactionsCount,
       };
     } catch (e) {

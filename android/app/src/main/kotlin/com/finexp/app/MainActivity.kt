@@ -1,4 +1,4 @@
-package com.trackexp.track_exp
+package com.finexp.app
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -94,17 +94,51 @@ class TransactionRepository {
   // Watch transactions
   Stream<List<Transaction>> watchTransactions() {
     return Stream<List<Transaction>>.multi((controller) {
+      List<String> lastIds = [];
+      
+      void emitIfChanged() {
+        if (!controller.isClosed) {
+          final current = getAllTransactions();
+          final currentIds = current.map((t) => t.id).toList()..sort();
+          final lastIdsSorted = List<String>.from(lastIds)..sort();
+          
+          // Only emit if the transaction list has actually changed
+          if (currentIds.length != lastIdsSorted.length ||
+              !_listsEqual(currentIds, lastIdsSorted)) {
+            lastIds = currentIds;
+            controller.add(current);
+          }
+        }
+      }
+      
       // Emit current data immediately
-      controller.add(getAllTransactions());
+      final initial = getAllTransactions();
+      lastIds = initial.map((t) => t.id).toList();
+      controller.add(initial);
       
       // Listen to box changes and emit updates
       final subscription = _box.watch().listen((_) {
-        controller.add(getAllTransactions());
+        emitIfChanged();
+      });
+      
+      // Add periodic check as fallback for mobile platforms (every 2 seconds)
+      // This ensures updates are caught even if watch() doesn't fire reliably
+      final timer = Stream.periodic(const Duration(seconds: 2)).listen((_) {
+        emitIfChanged();
       });
       
       controller.onCancel = () {
         subscription.cancel();
+        timer.cancel();
       };
     });
+  }
+  
+  bool _listsEqual(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
   }
 }

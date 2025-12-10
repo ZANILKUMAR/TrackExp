@@ -152,7 +152,7 @@ class SettingsScreen extends ConsumerWidget {
           
           ListTile(
             leading: Icon(Icons.copyright, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
-            title: const Text('© 2025 FinExp'),
+            title: const Text('© 2026 FinExp'),
             subtitle: const Text('All rights reserved'),
           ),
         ],
@@ -342,16 +342,6 @@ class SettingsScreen extends ConsumerWidget {
 
   Future<void> _importData(BuildContext context, WidgetRef ref) async {
     try {
-      // Show file picker
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Select a file to import (JSON, CSV, or Excel)...'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['json', 'csv', 'xlsx', 'xls'],
@@ -368,206 +358,110 @@ class SettingsScreen extends ConsumerWidget {
       
       print('Selected file: $fileName');
 
-      // Show confirmation dialog
+      final categoryRepo = ref.read(categoryRepositoryProvider);
+      final transactionRepo = ref.read(transactionRepositoryProvider);
+      final exportService = ExportImportService(categoryRepo, transactionRepo);
+
+      print('Reading file...');
+      // Read file bytes
+      final bytes = result.files.first.bytes;
+      if (bytes == null) {
+        throw Exception('Could not read file');
+      }
+      final fileData = utf8.decode(bytes);
+      print('File read successfully, size: ${fileData.length} bytes');
+
+      print('Importing data...');
+      final fileExtension = fileName.split('.').last.toLowerCase();
+      Map<String, dynamic> importResult;
+      
+      if (fileExtension == 'json') {
+        importResult = await exportService.importFromJson(fileData);
+      } else if (fileExtension == 'csv' || fileExtension == 'xlsx' || fileExtension == 'xls') {
+        importResult = await exportService.importFromCsv(fileData, categoryRepo);
+      } else {
+        throw Exception('Unsupported file format: $fileExtension');
+      }
+
       if (context.mounted) {
-        final confirm = await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Row(
-              children: [
-                Icon(Icons.info_outline, color: Colors.blue),
-                SizedBox(width: 8),
-                Text('Import Data'),
-              ],
-            ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Selected file:'),
-                const SizedBox(height: 4),
-                Text(
-                  fileName,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'This will merge imported data with existing data. Your current data will not be deleted.',
-                  style: TextStyle(fontSize: 13),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Continue with import?',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('Import'),
-              ),
-            ],
-          ),
-        );
-
-        if (confirm != true) {
-          return;
-        }
-
-        // Show loading dialog
-        if (context.mounted) {
+        if (importResult['success']) {
+          // Refresh providers
+          ref.invalidate(categoriesProvider);
+          ref.invalidate(transactionsProvider);
+          
           showDialog(
             context: context,
-            barrierDismissible: false,
-            builder: (context) => PopScope(
-              canPop: false,
-              child: AlertDialog(
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const CircularProgressIndicator(),
-                    const SizedBox(height: 16),
-                    const Text('Importing data...'),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Please wait',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                      ),
-                    ),
-                  ],
-                ),
+            builder: (context) => AlertDialog(
+              title: const Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.green),
+                  SizedBox(width: 8),
+                  Text('Import Successful'),
+                ],
               ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Data imported successfully!'),
+                  const SizedBox(height: 16),
+                  Text('Categories imported: ${importResult['categoriesCount']}'),
+                  Text('Transactions imported: ${importResult['transactionsCount']}'),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Your data has been merged with the imported data.',
+                    style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('OK'),
+                ),
+              ],
             ),
           );
-        }
-
-        final categoryRepo = ref.read(categoryRepositoryProvider);
-        final transactionRepo = ref.read(transactionRepositoryProvider);
-        final exportService = ExportImportService(categoryRepo, transactionRepo);
-
-        print('Reading file...');
-        // Read file bytes
-        final bytes = result.files.first.bytes;
-        if (bytes == null) {
-          if (context.mounted) {
-            Navigator.pop(context); // Close loading dialog
-          }
-          throw Exception('Could not read file');
-        }
-        final fileData = utf8.decode(bytes);
-        print('File read successfully, size: ${fileData.length} bytes');
-
-        print('Importing data...');
-        final fileExtension = fileName.split('.').last.toLowerCase();
-        Map<String, dynamic> importResult;
-        
-        if (fileExtension == 'json') {
-          importResult = await exportService.importFromJson(fileData);
-        } else if (fileExtension == 'csv' || fileExtension == 'xlsx' || fileExtension == 'xls') {
-          importResult = await exportService.importFromCsv(fileData, categoryRepo);
         } else {
-          if (context.mounted) {
-            Navigator.pop(context); // Close loading dialog
-          }
-          throw Exception('Unsupported file format: $fileExtension');
-        }
-
-        // Close loading dialog
-        if (context.mounted) {
-          Navigator.pop(context);
-        }
-
-        if (context.mounted) {
-          if (importResult['success']) {
-            // Refresh providers
-            ref.invalidate(categoriesProvider);
-            ref.invalidate(transactionsProvider);
-            
-            showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Row(
-                  children: [
-                    Icon(Icons.check_circle, color: Colors.green),
-                    SizedBox(width: 8),
-                    Text('Import Successful'),
-                  ],
-                ),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Data imported successfully!'),
-                    const SizedBox(height: 16),
-                    Text('Categories imported: ${importResult['categoriesCount']}'),
-                    Text('Transactions imported: ${importResult['transactionsCount']}'),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Your data has been merged with the imported data.',
-                      style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
-                    ),
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('OK'),
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Row(
+                children: [
+                  Icon(Icons.error, color: Colors.red),
+                  SizedBox(width: 8),
+                  Text('Import Failed'),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Failed to import data.'),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Error: ${importResult['error']}',
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Make sure the file is a valid FinExp backup file.',
+                    style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
                   ),
                 ],
               ),
-            );
-          } else {
-            showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Row(
-                  children: [
-                    Icon(Icons.error, color: Colors.red),
-                    SizedBox(width: 8),
-                    Text('Import Failed'),
-                  ],
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('OK'),
                 ),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('Failed to import data.'),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Error: ${importResult['error']}',
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Make sure the file is a valid FinExp backup file.',
-                      style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
-                    ),
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('OK'),
-                  ),
-                ],
-              ),
-            );
-          }
+              ],
+            ),
+          );
         }
       }
     } catch (e) {
       print('Import error: $e');
-      // Close loading dialog if it's open
-      if (context.mounted) {
-        Navigator.pop(context);
-      }
       if (context.mounted) {
         showDialog(
           context: context,
