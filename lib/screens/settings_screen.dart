@@ -147,7 +147,7 @@ class SettingsScreen extends ConsumerWidget {
           const ListTile(
             leading: Icon(Icons.email, color: Colors.blue),
             title: Text('Contact Us'),
-            subtitle: Text('contact.techsource@gmail.com'),
+            subtitle: Text('contact.aktechsource@gmail.com'),
           ),
           
           ListTile(

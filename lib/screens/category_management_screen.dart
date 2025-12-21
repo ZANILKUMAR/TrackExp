@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../models/category.dart';
 import '../providers/category_provider.dart';
-import 'package:flutter/services.dart';
 
 class CategoryManagementScreen extends ConsumerWidget {
   const CategoryManagementScreen({super.key});
@@ -43,7 +42,7 @@ class CategoryManagementScreen extends ConsumerWidget {
   void _showAddCategoryDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
-      builder: (context) => _AddEditCategoryDialog(),
+      builder: (context) => const _AddEditCategoryDialog(),
     );
   }
 }
@@ -460,7 +459,7 @@ class _AddEditCategoryDialogState extends ConsumerState<_AddEditCategoryDialog> 
                   
                   // Type Selection
                   DropdownButtonFormField<String>(
-                    value: _type,
+                    initialValue: _type,
                     decoration: const InputDecoration(
                       labelText: 'Type',
                       border: OutlineInputBorder(),
