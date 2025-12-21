@@ -371,7 +371,7 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
                         ),
                       ),
                     );
-                  }).toList(),
+                  }),
           ],
         );
       },
@@ -391,7 +391,7 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
     } else {
       final difference = today.difference(transactionDate).inDays;
       if (difference < 7) {
-        return '${difference} days ago';
+        return '$difference days ago';
       }
       return '';
     }

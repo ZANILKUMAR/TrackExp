@@ -504,7 +504,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: _selectedCategoryId,
+                    initialValue: _selectedCategoryId,
                     decoration: const InputDecoration(
                       labelText: 'Category',
                       border: OutlineInputBorder(),
