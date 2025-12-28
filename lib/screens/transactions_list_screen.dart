@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/category.dart';
 import '../providers/transaction_provider.dart';
 import '../providers/category_provider.dart';
+import '../providers/group_provider.dart';
 import '../utils/format_helper.dart';
 import 'add_transaction_screen.dart';
 
@@ -18,10 +19,12 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
   Widget build(BuildContext context) {
     final transactions = ref.watch(filteredTransactionsProvider);
     final categories = ref.watch(categoriesProvider).value ?? [];
+    final groups = ref.watch(groupsProvider).value ?? [];
     final typeFilter = ref.watch(selectedTransactionTypeProvider);
     final categoriesFilter = ref.watch(selectedCategoriesFilterProvider);
     final dateRange = ref.watch(selectedDateRangeProvider);
     final dateFilterType = ref.watch(selectedDateFilterTypeProvider);
+    final groupFilter = ref.watch(selectedGroupFilterProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -29,14 +32,14 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_list),
-            onPressed: () => _showFilterDialog(context, categories),
+            onPressed: () => _showFilterDialog(context, categories, groups),
           ),
         ],
       ),
       body: Column(
         children: [
           // Active Filters
-          if (typeFilter != null || categoriesFilter.isNotEmpty || dateRange != null)
+          if (typeFilter != null || categoriesFilter.isNotEmpty || dateRange != null || groupFilter != null)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
@@ -71,6 +74,7 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
                           ref.read(selectedCategoriesFilterProvider.notifier).state = [];
                           ref.read(selectedDateRangeProvider.notifier).state = null;
                           ref.read(selectedDateFilterTypeProvider.notifier).state = null;
+                          ref.read(selectedGroupFilterProvider.notifier).state = null;
                         },
                         icon: const Icon(Icons.clear_all, size: 14),
                         label: const Text('Clear All', style: TextStyle(fontSize: 11)),
@@ -123,6 +127,29 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
                           },
                         );
                       }),
+                      if (groupFilter != null)
+                        _buildActiveFilterChip(
+                          label: groupFilter == 'ungrouped' 
+                              ? 'Ungrouped'
+                              : groups.firstWhere((g) => g.id == groupFilter, 
+                                  orElse: () => groups.first).name,
+                          icon: groupFilter == 'ungrouped' 
+                              ? Icons.folder_off
+                              : (groups.firstWhere((g) => g.id == groupFilter, 
+                                    orElse: () => groups.first).iconCodePoint != null
+                                  ? IconData(
+                                      groups.firstWhere((g) => g.id == groupFilter, 
+                                        orElse: () => groups.first).iconCodePoint!, 
+                                      fontFamily: 'MaterialIcons')
+                                  : Icons.folder),
+                          color: groupFilter != 'ungrouped' && 
+                                 groups.any((g) => g.id == groupFilter)
+                              ? Color(groups.firstWhere((g) => g.id == groupFilter).colorValue!)
+                              : null,
+                          onDeleted: () {
+                            ref.read(selectedGroupFilterProvider.notifier).state = null;
+                          },
+                        ),
                     ],
                   ),
                 ],
@@ -130,23 +157,47 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
             ),
 
           // Filter Summary (Income/Expense Totals)
-          if (typeFilter != null || categoriesFilter.isNotEmpty || dateRange != null)
+          if (typeFilter != null || categoriesFilter.isNotEmpty || dateRange != null || groupFilter != null)
             _buildFilterSummary(transactions),
 
           // Transactions List
           Expanded(
             child: transactions.isEmpty
                 ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.receipt_long, size: 64, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3)),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No transactions found',
-                          style: TextStyle(fontSize: 18, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
-                        ),
-                      ],
+                    child: Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.receipt_long,
+                              size: 64,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            'No transactions found',
+                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Add your first transaction to get started',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
                     ),
                   )
                 : _buildGroupedTransactionsList(transactions, categories),
@@ -397,7 +448,7 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
     }
   }
 
-  void _showFilterDialog(BuildContext context, List<Category> categories) {
+  void _showFilterDialog(BuildContext context, List<Category> categories, List groups) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -409,7 +460,7 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: DefaultTabController(
-          length: 3,
+          length: 4,
           child: Column(
             children: [
               // Header
@@ -430,6 +481,7 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
                             ref.read(selectedCategoriesFilterProvider.notifier).state = [];
                             ref.read(selectedDateRangeProvider.notifier).state = null;
                             ref.read(selectedDateFilterTypeProvider.notifier).state = null;
+                            ref.read(selectedGroupFilterProvider.notifier).state = null;
                           },
                           child: const Text('Clear All'),
                         ),
@@ -449,6 +501,7 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
                   Tab(icon: Icon(Icons.calendar_today, size: 20), text: 'Date'),
                   Tab(icon: Icon(Icons.swap_vert, size: 20), text: 'Type'),
                   Tab(icon: Icon(Icons.category, size: 20), text: 'Category'),
+                  Tab(icon: Icon(Icons.folder, size: 20), text: 'Group'),
                 ],
                 labelColor: Theme.of(context).colorScheme.primary,
                 indicatorSize: TabBarIndicatorSize.tab,
@@ -466,6 +519,9 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
                     
                     // Category Filter Tab
                     _buildCategoryFilterTab(categories),
+                    
+                    // Group Filter Tab
+                    _buildGroupFilterTab(groups),
                   ],
                 ),
               ),
@@ -681,6 +737,80 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
               ),
             );
           }).toList(),
+        );
+      },
+    );
+  }
+  
+  Widget _buildGroupFilterTab(List groups) {
+    return Consumer(
+      builder: (context, ref, child) {
+        final selectedGroup = ref.watch(selectedGroupFilterProvider);
+        
+        return ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            _buildFilterOption(
+              title: 'All Transactions',
+              subtitle: 'No group filter',
+              icon: Icons.all_inclusive,
+              isSelected: selectedGroup == null,
+              onTap: () {
+                ref.read(selectedGroupFilterProvider.notifier).state = null;
+              },
+            ),
+            const SizedBox(height: 12),
+            _buildFilterOption(
+              title: 'Ungrouped',
+              subtitle: 'Transactions without a group',
+              icon: Icons.folder_off,
+              iconColor: Colors.grey,
+              isSelected: selectedGroup == 'ungrouped',
+              onTap: () {
+                ref.read(selectedGroupFilterProvider.notifier).state = 'ungrouped';
+              },
+            ),
+            if (groups.isEmpty) ...[
+              const SizedBox(height: 32),
+              Center(
+                child: Column(
+                  children: [
+                    Icon(Icons.folder_outlined, size: 64, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3)),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No groups available',
+                      style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Create groups in settings',
+                      style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
+                    ),
+                  ],
+                ),
+              ),
+            ] else ...[
+              const SizedBox(height: 12),
+              ...groups.map((group) {
+                final isSelected = selectedGroup == group.id;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _buildFilterOption(
+                    title: group.name,
+                    subtitle: group.description ?? 'Expense group',
+                    icon: group.iconCodePoint != null 
+                        ? IconData(group.iconCodePoint!, fontFamily: 'MaterialIcons')
+                        : Icons.folder,
+                    iconColor: group.colorValue != null ? Color(group.colorValue!) : null,
+                    isSelected: isSelected,
+                    onTap: () {
+                      ref.read(selectedGroupFilterProvider.notifier).state = group.id;
+                    },
+                  ),
+                );
+              }).toList(),
+            ],
+          ],
         );
       },
     );

@@ -7,6 +7,7 @@ import '../providers/category_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../providers/theme_provider.dart';
 import 'category_management_screen.dart';
+import 'group_management_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -44,6 +45,22 @@ class SettingsScreen extends ConsumerWidget {
                 context,
                 MaterialPageRoute(
                   builder: (context) => const CategoryManagementScreen(),
+                ),
+              );
+            },
+          ),
+          
+          // Group Management
+          ListTile(
+            leading: const Icon(Icons.folder),
+            title: const Text('Manage Groups'),
+            subtitle: const Text('Organize expenses by groups'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const GroupManagementScreen(),
                 ),
               );
             },
@@ -93,7 +110,7 @@ class SettingsScreen extends ConsumerWidget {
           const ListTile(
             leading: Icon(Icons.info),
             title: Text('Version'),
-            subtitle: Text('1.0.0'),
+            subtitle: Text('1.1.0 (Build 6)'),
           ),
           const Divider(),
           
@@ -113,7 +130,7 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'FinExp is your personal finance companion designed to help you track income and expenses effortlessly. With intuitive categorization, detailed analytics, and powerful filtering options, take control of your financial journey.',
+                  'FinExp is your personal finance companion designed to help you track income and expenses effortlessly. With intuitive categorization, group organization, detailed analytics, and powerful filtering options, take control of your financial journey.',
                   style: TextStyle(
                     fontSize: 13,
                     color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
@@ -132,9 +149,10 @@ class SettingsScreen extends ConsumerWidget {
                 const SizedBox(height: 8),
                 _buildFeatureItem(context, '📊 Visual analytics with charts and graphs'),
                 _buildFeatureItem(context, '💰 Track income and expenses by category'),
-                _buildFeatureItem(context, '📅 Filter transactions by date and type'),
+                _buildFeatureItem(context, '📁 Organize expenses with custom groups'),
+                _buildFeatureItem(context, '📅 Filter transactions by date, type, category, and group'),
                 _buildFeatureItem(context, '💾 Export/Import data (JSON, CSV, Excel)'),
-                _buildFeatureItem(context, '🎨 Customizable categories with icons and colors'),
+                _buildFeatureItem(context, '🎨 Customizable categories and groups with icons and colors'),
                 _buildFeatureItem(context, '🌙 Dark mode support'),
                 _buildFeatureItem(context, '📱 Offline-first with local data storage'),
               ],

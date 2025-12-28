@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../models/transaction.dart';
 import '../models/category.dart';
+import '../models/group.dart';
 import '../providers/transaction_provider.dart';
 import '../providers/category_provider.dart';
+import '../providers/group_provider.dart';
 import '../utils/format_helper.dart';
 
 class AddTransactionScreen extends ConsumerStatefulWidget {
@@ -25,6 +27,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
   
   String _type = 'expense';
   String? _selectedCategoryId;
+  String? _selectedGroupId;
   DateTime _selectedDate = DateTime.now();
 
   @override
@@ -35,6 +38,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       _amountController.text = widget.transaction!.amount.toString();
       _notesController.text = widget.transaction!.notes ?? '';
       _selectedCategoryId = widget.transaction!.categoryId;
+      _selectedGroupId = widget.transaction!.groupId;
       _selectedDate = widget.transaction!.date;
     }
   }
@@ -90,6 +94,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
         categoryId: _selectedCategoryId!,
         notes: _notesController.text.isEmpty ? null : _notesController.text,
         date: _selectedDate,
+        groupId: _selectedGroupId,
       );
 
       // Save directly to repository to trigger stream updates
@@ -214,72 +219,50 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
               children: [
                 // Icon & Color Selection in a Row
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // Icon Selection
-                    Expanded(
-                      child: InkWell(
-                        onTap: () {
-                          setDialogState(() {
-                            showAllIcons = !showAllIcons;
-                            showAllColors = false;
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Theme.of(context).colorScheme.outline),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: selectedColor.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Icon(selectedIcon, color: selectedColor, size: 24),
-                              ),
-                              const SizedBox(width: 8),
-                              Icon(showAllIcons ? Icons.expand_less : Icons.expand_more, size: 18),
-                            ],
+                    InkWell(
+                      onTap: () {
+                        setDialogState(() {
+                          showAllIcons = !showAllIcons;
+                          showAllColors = false;
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(30),
+                      child: Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: selectedColor.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: selectedColor,
+                            width: 2,
                           ),
                         ),
+                        child: Icon(selectedIcon, color: selectedColor, size: 30),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 16),
                     // Color Selection
-                    Expanded(
-                      child: InkWell(
-                        onTap: () {
-                          setDialogState(() {
-                            showAllColors = !showAllColors;
-                            showAllIcons = false;
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Theme.of(context).colorScheme.outline),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: selectedColor,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: Theme.of(context).colorScheme.outline, width: 1),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Icon(showAllColors ? Icons.expand_less : Icons.expand_more, size: 18),
-                            ],
+                    InkWell(
+                      onTap: () {
+                        setDialogState(() {
+                          showAllColors = !showAllColors;
+                          showAllIcons = false;
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(30),
+                      child: Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: selectedColor,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.outline,
+                            width: 2,
                           ),
                         ),
                       ),
@@ -425,10 +408,287 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
     );
   }
 
+  void _showAddGroupDialog(BuildContext context, WidgetRef ref) {
+    final nameController = TextEditingController();
+    final descriptionController = TextEditingController();
+    Color selectedColor = Colors.blue;
+    IconData selectedIcon = Icons.folder;
+    bool showAllIcons = false;
+    bool showAllColors = false;
+
+    final availableIcons = [
+      Icons.folder,
+      Icons.work,
+      Icons.travel_explore,
+      Icons.home,
+      Icons.school,
+      Icons.medical_services,
+      Icons.sports_esports,
+      Icons.shopping_bag,
+      Icons.restaurant,
+      Icons.directions_car,
+      Icons.flight,
+      Icons.hotel,
+      Icons.beach_access,
+      Icons.fitness_center,
+      Icons.pets,
+      Icons.child_care,
+      Icons.airplane_ticket,
+      Icons.celebration,
+      Icons.volunteer_activism,
+      Icons.account_balance,
+      Icons.business_center,
+    ];
+
+    final availableColors = [
+      Colors.red,
+      Colors.pink,
+      Colors.purple,
+      Colors.deepPurple,
+      Colors.indigo,
+      Colors.blue,
+      Colors.cyan,
+      Colors.teal,
+      Colors.green,
+      Colors.lightGreen,
+      Colors.lime,
+      Colors.yellow,
+      Colors.amber,
+      Colors.orange,
+      Colors.deepOrange,
+      Colors.brown,
+    ];
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Add Group'),
+          content: SizedBox(
+            width: 300,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Icon & Color Selection in a Row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Icon Selection
+                    InkWell(
+                      onTap: () {
+                        setDialogState(() {
+                          showAllIcons = !showAllIcons;
+                          showAllColors = false;
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(30),
+                      child: Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: selectedColor.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: selectedColor,
+                            width: 2,
+                          ),
+                        ),
+                        child: Icon(selectedIcon, color: selectedColor, size: 30),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    // Color Selection
+                    InkWell(
+                      onTap: () {
+                        setDialogState(() {
+                          showAllColors = !showAllColors;
+                          showAllIcons = false;
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(30),
+                      child: Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: selectedColor,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.outline,
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                if (showAllIcons) ...[
+                  const SizedBox(height: 8),
+                  Container(
+                    height: 140,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Theme.of(context).colorScheme.outline),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: GridView.builder(
+                      padding: const EdgeInsets.all(8),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 6,
+                        crossAxisSpacing: 6,
+                        mainAxisSpacing: 6,
+                      ),
+                      itemCount: availableIcons.length,
+                      itemBuilder: (context, index) {
+                        final icon = availableIcons[index];
+                        final isSelected = selectedIcon == icon;
+                        return InkWell(
+                          onTap: () {
+                            setDialogState(() {
+                              selectedIcon = icon;
+                              showAllIcons = false;
+                            });
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: isSelected ? selectedColor.withOpacity(0.2) : Colors.transparent,
+                              border: Border.all(
+                                color: isSelected ? selectedColor : Theme.of(context).colorScheme.outline,
+                                width: isSelected ? 2 : 1,
+                              ),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Icon(
+                              icon,
+                              color: isSelected ? selectedColor : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                              size: 20,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+                if (showAllColors) ...[
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: availableColors.map((color) {
+                      final isSelected = selectedColor == color;
+                      return InkWell(
+                        onTap: () {
+                          setDialogState(() {
+                            selectedColor = color;
+                            showAllColors = false;
+                          });
+                        },
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: color,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isSelected ? Theme.of(context).colorScheme.onSurface : Theme.of(context).colorScheme.outline,
+                              width: isSelected ? 3 : 1,
+                            ),
+                          ),
+                          child: isSelected
+                              ? const Icon(Icons.check, color: Colors.white, size: 18)
+                              : null,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+                const SizedBox(height: 16),
+                
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Group Name',
+                    border: OutlineInputBorder(),
+                  ),
+                  textCapitalization: TextCapitalization.words,
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: descriptionController,
+                  decoration: const InputDecoration(
+                    labelText: 'Description (Optional)',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 2,
+                  textCapitalization: TextCapitalization.sentences,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (nameController.text.trim().isEmpty) {
+                  ScaffoldMessenger.of(dialogContext).showSnackBar(
+                    const SnackBar(content: Text('Please enter a group name')),
+                  );
+                  return;
+                }
+
+                final newGroup = ExpenseGroup(
+                  id: const Uuid().v4(),
+                  name: nameController.text.trim(),
+                  description: descriptionController.text.trim().isEmpty
+                      ? null
+                      : descriptionController.text.trim(),
+                  colorValue: selectedColor.value,
+                  iconCodePoint: selectedIcon.codePoint,
+                  createdAt: DateTime.now(),
+                );
+
+                try {
+                  await ref.read(groupNotifierProvider.notifier).addGroup(newGroup);
+                  ref.invalidate(groupsProvider);
+                  
+                  if (!dialogContext.mounted) return;
+                  Navigator.pop(dialogContext);
+                  
+                  // Auto-select the newly created group
+                  setState(() {
+                    _selectedGroupId = newGroup.id;
+                  });
+
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Group added successfully')),
+                  );
+                } catch (e) {
+                  if (!dialogContext.mounted) return;
+                  ScaffoldMessenger.of(dialogContext).showSnackBar(
+                    SnackBar(content: Text('Error adding group: $e')),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
+              ),
+              child: const Text('Add'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final categories = ref.watch(categoriesProvider).value ?? [];
     final filteredCategories = categories.where((cat) => cat.type == _type).toList();
+    final groups = ref.watch(groupsProvider).value ?? [];
 
     return Scaffold(
       appBar: AppBar(
@@ -557,6 +817,73 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                   onPressed: () => _showAddCategoryDialog(context, ref),
                   icon: const Icon(Icons.add_circle_outline),
                   tooltip: 'Add Category',
+                  style: IconButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Group (Optional)
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedGroupId,
+                    decoration: const InputDecoration(
+                      labelText: 'Group (Optional)',
+                      border: OutlineInputBorder(),
+                      hintText: 'None',
+                    ),
+                    isExpanded: true,
+                    items: [
+                      const DropdownMenuItem<String>(
+                        value: null,
+                        child: Text('None'),
+                      ),
+                      ...groups.map((group) {
+                        return DropdownMenuItem<String>(
+                          value: group.id,
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 12,
+                                backgroundColor: group.colorValue != null
+                                    ? Color(group.colorValue!)
+                                    : Theme.of(context).colorScheme.primary,
+                                child: Icon(
+                                  group.iconCodePoint != null
+                                      ? IconData(group.iconCodePoint!, fontFamily: 'MaterialIcons')
+                                      : Icons.folder,
+                                  size: 14,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  group.name,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedGroupId = value;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  onPressed: () => _showAddGroupDialog(context, ref),
+                  icon: const Icon(Icons.add_circle_outline),
+                  tooltip: 'Add Group',
                   style: IconButton.styleFrom(
                     backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
                   ),

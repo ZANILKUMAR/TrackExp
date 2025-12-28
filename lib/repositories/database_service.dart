@@ -1,10 +1,12 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import '../models/category.dart';
 import '../models/transaction.dart';
+import '../models/group.dart';
 
 class DatabaseService {
   static const String categoriesBox = 'categories';
   static const String transactionsBox = 'transactions';
+  static const String groupsBox = 'groups';
 
   // Initialize Hive
   static Future<void> init() async {
@@ -13,10 +15,12 @@ class DatabaseService {
     // Register adapters
     Hive.registerAdapter(CategoryAdapter());
     Hive.registerAdapter(TransactionAdapter());
+    Hive.registerAdapter(ExpenseGroupAdapter());
     
     // Open boxes
     await Hive.openBox<Category>(categoriesBox);
     await Hive.openBox<Transaction>(transactionsBox);
+    await Hive.openBox<ExpenseGroup>(groupsBox);
     
     // Add default categories if empty
     await _addDefaultCategories();

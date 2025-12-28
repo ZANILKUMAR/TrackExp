@@ -87,7 +87,7 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       body: _screens[_selectedIndex],
       floatingActionButton: _selectedIndex == 0 || _selectedIndex == 1
-          ? FloatingActionButton(
+          ? FloatingActionButton.extended(
               onPressed: () async {
                 final result = await Navigator.push(
                   context,
@@ -103,7 +103,8 @@ class _MainScreenState extends State<MainScreen> {
                   });
                 }
               },
-              child: const Icon(Icons.add),
+              icon: const Icon(Icons.add),
+              label: const Text('Add'),
             )
           : null,
       bottomNavigationBar: NavigationBar(

@@ -22,6 +22,9 @@ class Transaction extends HiveObject {
   @HiveField(5)
   late DateTime date;
 
+  @HiveField(6)
+  String? groupId; // Optional group association
+
   Transaction({
     required this.id,
     required this.type,
@@ -29,6 +32,7 @@ class Transaction extends HiveObject {
     required this.categoryId,
     this.notes,
     required this.date,
+    this.groupId,
   });
 
   // Convert to JSON
@@ -40,6 +44,7 @@ class Transaction extends HiveObject {
       'categoryId': categoryId,
       'notes': notes,
       'date': date.toIso8601String(),
+      'groupId': groupId,
     };
   }
 
@@ -52,6 +57,7 @@ class Transaction extends HiveObject {
       categoryId: json['categoryId'] as String,
       notes: json['notes'] as String?,
       date: DateTime.parse(json['date'] as String),
+      groupId: json['groupId'] as String?,
     );
   }
 
@@ -62,6 +68,7 @@ class Transaction extends HiveObject {
     String? categoryId,
     String? notes,
     DateTime? date,
+    String? groupId,
   }) {
     return Transaction(
       id: id ?? this.id,
@@ -70,6 +77,7 @@ class Transaction extends HiveObject {
       categoryId: categoryId ?? this.categoryId,
       notes: notes ?? this.notes,
       date: date ?? this.date,
+      groupId: groupId ?? this.groupId,
     );
   }
 }

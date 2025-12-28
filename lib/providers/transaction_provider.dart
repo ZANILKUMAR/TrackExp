@@ -16,6 +16,7 @@ final selectedTransactionTypeProvider = StateProvider<String?>((ref) => null);
 final selectedCategoriesFilterProvider = StateProvider<List<String>>((ref) => []); // Changed to List
 final selectedDateRangeProvider = StateProvider<TransactionDateRange?>((ref) => null);
 final selectedDateFilterTypeProvider = StateProvider<String?>((ref) => null); // 'week', 'month', 'custom'
+final selectedGroupFilterProvider = StateProvider<String?>((ref) => null); // Filter by group
 
 class TransactionDateRange {
   final DateTime start;
@@ -30,6 +31,7 @@ final filteredTransactionsProvider = Provider<List<Transaction>>((ref) {
   final typeFilter = ref.watch(selectedTransactionTypeProvider);
   final categoriesFilter = ref.watch(selectedCategoriesFilterProvider);
   final dateRange = ref.watch(selectedDateRangeProvider);
+  final groupFilter = ref.watch(selectedGroupFilterProvider);
 
   var filtered = allTransactions;
 
@@ -46,6 +48,16 @@ final filteredTransactionsProvider = Provider<List<Transaction>>((ref) {
       t.date.isAfter(dateRange.start.subtract(const Duration(days: 1))) &&
       t.date.isBefore(dateRange.end.add(const Duration(days: 1)))
     ).toList();
+  }
+
+  if (groupFilter != null) {
+    if (groupFilter == 'ungrouped') {
+      // Filter for transactions without a group
+      filtered = filtered.where((t) => t.groupId == null || t.groupId!.isEmpty).toList();
+    } else {
+      // Filter for specific group
+      filtered = filtered.where((t) => t.groupId == groupFilter).toList();
+    }
   }
 
   return filtered;

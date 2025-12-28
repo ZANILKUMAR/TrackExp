@@ -283,72 +283,50 @@ class _AddEditCategoryDialogState extends ConsumerState<_AddEditCategoryDialog> 
                 children: [
                   // Icon & Color Selection in a Row (at top)
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       // Icon Selection
-                      Expanded(
-                        child: InkWell(
-                          onTap: () {
-                            setDialogState(() {
-                              showAllIcons = !showAllIcons;
-                              showAllColors = false;
-                            });
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Theme.of(context).colorScheme.outline),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: _selectedColor.withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Icon(_selectedIcon, color: _selectedColor, size: 24),
-                                ),
-                                const SizedBox(width: 8),
-                                Icon(showAllIcons ? Icons.expand_less : Icons.expand_more, size: 18),
-                              ],
+                      InkWell(
+                        onTap: () {
+                          setDialogState(() {
+                            showAllIcons = !showAllIcons;
+                            showAllColors = false;
+                          });
+                        },
+                        borderRadius: BorderRadius.circular(30),
+                        child: Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: _selectedColor.withOpacity(0.2),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: _selectedColor,
+                              width: 2,
                             ),
                           ),
+                          child: Icon(_selectedIcon, color: _selectedColor, size: 30),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 16),
                       // Color Selection
-                      Expanded(
-                        child: InkWell(
-                          onTap: () {
-                            setDialogState(() {
-                              showAllColors = !showAllColors;
-                              showAllIcons = false;
-                            });
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Theme.of(context).colorScheme.outline),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: _selectedColor,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: Theme.of(context).colorScheme.outline, width: 1),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Icon(showAllColors ? Icons.expand_less : Icons.expand_more, size: 18),
-                              ],
+                      InkWell(
+                        onTap: () {
+                          setDialogState(() {
+                            showAllColors = !showAllColors;
+                            showAllIcons = false;
+                          });
+                        },
+                        borderRadius: BorderRadius.circular(30),
+                        child: Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: _selectedColor,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Theme.of(context).colorScheme.outline,
+                              width: 2,
                             ),
                           ),
                         ),
