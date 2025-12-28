@@ -19,10 +19,25 @@ class RecentTransactionsWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (transactions.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(32.0),
-          child: Text('No recent transactions'),
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            children: [
+              Icon(
+                Icons.receipt_long_outlined,
+                size: 48,
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'No recent transactions',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -40,8 +55,13 @@ class RecentTransactionsWidget extends ConsumerWidget {
 
         return Card(
           margin: const EdgeInsets.only(bottom: 8),
+          elevation: 1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
           child: ListTile(
             leading: CircleAvatar(
+              radius: 22,
               backgroundColor: category.colorValue != null
                   ? Color(category.colorValue!)
                   : (transaction.type == 'income' ? Colors.green : Colors.red),

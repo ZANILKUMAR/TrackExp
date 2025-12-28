@@ -95,3 +95,4 @@ coverage/
 
 # Exceptions (keep generated Hive adapters in version control)
 !lib/models/*.g.dart
+/SIGNING_CREDENTIALS.txt

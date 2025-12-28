@@ -1,50 +1,47 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'transaction.dart';
+part of 'group.dart';
 
 // **************************************************************************
 // TypeAdapterGenerator
 // **************************************************************************
 
-class TransactionAdapter extends TypeAdapter<Transaction> {
+class ExpenseGroupAdapter extends TypeAdapter<ExpenseGroup> {
   @override
-  final int typeId = 1;
+  final int typeId = 2;
 
   @override
-  Transaction read(BinaryReader reader) {
+  ExpenseGroup read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Transaction(
+    return ExpenseGroup(
       id: fields[0] as String,
-      type: fields[1] as String,
-      amount: fields[2] as double,
-      categoryId: fields[3] as String,
-      notes: fields[4] as String?,
-      date: fields[5] as DateTime,
-      groupId: fields[6] as String?,
+      name: fields[1] as String,
+      description: fields[2] as String?,
+      colorValue: fields[3] as int?,
+      iconCodePoint: fields[4] as int?,
+      createdAt: fields[5] as DateTime,
     );
   }
 
   @override
-  void write(BinaryWriter writer, Transaction obj) {
+  void write(BinaryWriter writer, ExpenseGroup obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
-      ..write(obj.type)
+      ..write(obj.name)
       ..writeByte(2)
-      ..write(obj.amount)
+      ..write(obj.description)
       ..writeByte(3)
-      ..write(obj.categoryId)
+      ..write(obj.colorValue)
       ..writeByte(4)
-      ..write(obj.notes)
+      ..write(obj.iconCodePoint)
       ..writeByte(5)
-      ..write(obj.date)
-      ..writeByte(6)
-      ..write(obj.groupId);
+      ..write(obj.createdAt);
   }
 
   @override
@@ -53,7 +50,7 @@ class TransactionAdapter extends TypeAdapter<Transaction> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is TransactionAdapter &&
+      other is ExpenseGroupAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
