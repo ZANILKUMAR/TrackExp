@@ -4,6 +4,7 @@ import '../models/transaction.dart';
 import '../models/category.dart';
 import '../utils/format_helper.dart';
 import '../providers/transaction_provider.dart';
+import '../constants/design_system.dart';
 import '../screens/add_transaction_screen.dart';
 
 class RecentTransactionsWidget extends ConsumerWidget {
@@ -21,19 +22,26 @@ class RecentTransactionsWidget extends ConsumerWidget {
     if (transactions.isEmpty) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(32.0),
+          padding: FinvixSpacing.paddingXl,
           child: Column(
             children: [
-              Icon(
-                Icons.receipt_long_outlined,
-                size: 48,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+              Container(
+                padding: FinvixSpacing.paddingLg,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.2),
+                  borderRadius: FinvixRadius.radiusLg,
+                ),
+                child: Icon(
+                  Icons.receipt_long_outlined,
+                  size: 40,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: FinvixSpacing.lg),
               Text(
                 'No recent transactions',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                style: FinvixTypography.bodyMedium.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -53,13 +61,18 @@ class RecentTransactionsWidget extends ConsumerWidget {
           ),
         );
 
-        return Card(
-          margin: const EdgeInsets.only(bottom: 8),
-          elevation: 1,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+        return Container(
+          margin: const EdgeInsets.only(bottom: FinvixSpacing.md),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: FinvixRadius.radiusLg,
+            border: Border.all(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              width: 0.5,
+            ),
           ),
           child: ListTile(
+            contentPadding: FinvixSpacing.paddingLg,
             leading: CircleAvatar(
               radius: 22,
               backgroundColor: category.colorValue != null
@@ -75,21 +88,26 @@ class RecentTransactionsWidget extends ConsumerWidget {
             ),
             title: Text(
               category.name,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: FinvixTypography.titleMedium.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
             ),
-            subtitle: Text(FormatHelper.formatShortDate(transaction.date)),
+            subtitle: Text(
+              FormatHelper.formatShortDate(transaction.date),
+              style: FinvixTypography.bodySmall.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   '${transaction.type == 'income' ? '+' : '-'} ${FormatHelper.formatCurrency(transaction.amount)}',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
+                  style: FinvixTypography.titleMedium.copyWith(
                     color: transaction.type == 'income' ? Colors.green : Colors.red,
                   ),
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: FinvixSpacing.sm),
                 IconButton(
                   icon: const Icon(Icons.delete_outline, size: 18),
                   color: Colors.red.shade400,

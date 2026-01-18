@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../models/category.dart';
+import '../constants/design_system.dart';
 
 class PieChartWidget extends StatelessWidget {
   final Map<String, double> categorySpending;
@@ -55,16 +56,23 @@ class PieChartWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (categorySpending.isEmpty) {
-      return const SizedBox(
+      return SizedBox(
         height: 200,
-        child: Center(child: Text('No spending data')),
+        child: Center(
+          child: Text(
+            'No spending data',
+            style: FinvixTypography.bodyMedium.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
       );
     }
 
     final total = categorySpending.values.fold(0.0, (sum, val) => sum + val);
 
     return SizedBox(
-      height: 250,
+      height: 300,
       child: Row(
         children: [
           Expanded(

@@ -1,4 +1,4 @@
-# Data Persistence Test for FinExp
+# Data Persistence Test for Finvix
 
 ## Test Steps:
 

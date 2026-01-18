@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../models/category.dart';
 import '../providers/category_provider.dart';
+import '../constants/design_system.dart';
 
 class CategoryManagementScreen extends ConsumerWidget {
   const CategoryManagementScreen({super.key});
@@ -17,11 +18,22 @@ class CategoryManagementScreen extends ConsumerWidget {
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Manage Categories'),
-          bottom: const TabBar(
+          title: Text(
+            'Manage Categories',
+            style: FinvixTypography.headlineMedium.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          bottom: TabBar(
             tabs: [
-              Tab(text: 'Expense', icon: Icon(Icons.arrow_downward)),
-              Tab(text: 'Income', icon: Icon(Icons.arrow_upward)),
+              Tab(
+                text: 'Expense',
+                icon: const Icon(Icons.arrow_downward),
+              ),
+              Tab(
+                text: 'Income',
+                icon: const Icon(Icons.arrow_upward),
+              ),
             ],
           ),
         ),
@@ -60,11 +72,24 @@ class _CategoryList extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.category, size: 64, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4)),
-            const SizedBox(height: 16),
+            Container(
+              padding: FinvixSpacing.paddingXl,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.2),
+                borderRadius: FinvixRadius.radiusXl,
+              ),
+              child: Icon(
+                Icons.category,
+                size: 56,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: FinvixSpacing.xl),
             Text(
               'No categories found',
-              style: TextStyle(fontSize: 18, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+              style: FinvixTypography.headlineSmall.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
             ),
           ],
         ),
@@ -72,29 +97,48 @@ class _CategoryList extends ConsumerWidget {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.symmetric(
+        horizontal: FinvixSpacing.md,
+        vertical: FinvixSpacing.lg,
+      ),
       itemCount: categories.length,
       itemBuilder: (context, index) {
         final category = categories[index];
-        return Card(
+        return Container(
+          margin: const EdgeInsets.only(bottom: FinvixSpacing.md),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: FinvixRadius.radiusLg,
+            border: Border.all(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              width: 0.5,
+            ),
+          ),
           child: ListTile(
+            contentPadding: FinvixSpacing.paddingLg,
             leading: CircleAvatar(
               backgroundColor: category.colorValue != null
                   ? Color(category.colorValue!)
-                  : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                  : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
               child: Icon(
                 category.iconCodePoint != null
                     ? IconData(category.iconCodePoint!, fontFamily: 'MaterialIcons')
                     : Icons.category,
                 color: Colors.white,
+                size: 20,
               ),
             ),
-            title: Text(category.name),
+            title: Text(
+              category.name,
+              style: FinvixTypography.titleMedium.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.edit),
+                  icon: const Icon(Icons.edit, size: 20),
                   onPressed: () => _showEditCategoryDialog(context, ref, category),
                 ),
                 IconButton(

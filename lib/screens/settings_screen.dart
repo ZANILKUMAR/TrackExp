@@ -6,6 +6,7 @@ import '../utils/export_import_service.dart';
 import '../providers/category_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../providers/theme_provider.dart';
+import '../constants/design_system.dart';
 import 'category_management_screen.dart';
 import 'group_management_screen.dart';
 
@@ -18,102 +19,247 @@ class SettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(
+          'Settings',
+          style: FinvixTypography.headlineMedium.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
       ),
       body: ListView(
+        padding: const EdgeInsets.symmetric(vertical: FinvixSpacing.lg),
         children: [
-          // Theme Settings
-          ListTile(
-            leading: Icon(isDarkMode ? Icons.dark_mode : Icons.light_mode),
-            title: const Text('Dark Mode'),
-            trailing: Switch(
-              value: isDarkMode,
-              onChanged: (value) {
-                ref.read(themeModeProvider.notifier).toggleTheme(value);
-              },
+          // Theme Settings Section
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: FinvixSpacing.lg),
+            child: Text(
+              'Appearance',
+              style: FinvixTypography.titleMedium.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
             ),
           ),
-          const Divider(),
+          const SizedBox(height: FinvixSpacing.md),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: FinvixSpacing.md),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: FinvixRadius.radiusLg,
+              border: Border.all(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                width: 0.5,
+              ),
+            ),
+            child: ListTile(
+              leading: Icon(isDarkMode ? Icons.dark_mode : Icons.light_mode),
+              title: Text(
+                'Dark Mode',
+                style: FinvixTypography.titleMedium.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+              trailing: Switch(
+                value: isDarkMode,
+                onChanged: (value) {
+                  ref.read(themeModeProvider.notifier).toggleTheme(value);
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: FinvixSpacing.xxxl),
 
-          // Category Management
-          ListTile(
-            leading: const Icon(Icons.category),
-            title: const Text('Manage Categories'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const CategoryManagementScreen(),
-                ),
-              );
-            },
+          // Management Section
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: FinvixSpacing.lg),
+            child: Text(
+              'Management',
+              style: FinvixTypography.titleMedium.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
           ),
-          
-          // Group Management
-          ListTile(
-            leading: const Icon(Icons.folder),
-            title: const Text('Manage Groups'),
-            subtitle: const Text('Organize expenses by groups'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const GroupManagementScreen(),
+          const SizedBox(height: FinvixSpacing.md),
+          Column(
+            children: [
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: FinvixSpacing.md),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: FinvixRadius.radiusLg,
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    width: 0.5,
+                  ),
                 ),
-              );
-            },
+                child: ListTile(
+                  leading: const Icon(Icons.category),
+                  title: Text(
+                    'Manage Categories',
+                    style: FinvixTypography.titleMedium.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CategoryManagementScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: FinvixSpacing.md),
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: FinvixSpacing.md),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: FinvixRadius.radiusLg,
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    width: 0.5,
+                  ),
+                ),
+                child: ListTile(
+                  leading: const Icon(Icons.folder),
+                  title: Text(
+                    'Manage Groups',
+                    style: FinvixTypography.titleMedium.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Organize expenses by groups',
+                    style: FinvixTypography.bodySmall.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const GroupManagementScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
-          const Divider(),
+          const SizedBox(height: FinvixSpacing.xxxl),
 
           // Data Management Section
-          const Padding(
-            padding: EdgeInsets.all(16.0),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: FinvixSpacing.lg),
             child: Text(
               'Data Management',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+              style: FinvixTypography.titleMedium.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ),
-          
-          // Export Data
-          ListTile(
-            leading: const Icon(Icons.upload_file, color: Colors.blue),
-            title: const Text('Export Data'),
-            subtitle: const Text('Save as JSON, CSV, or Excel'),
-            onTap: () => _exportData(context, ref),
+          const SizedBox(height: FinvixSpacing.md),
+          Column(
+            children: [
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: FinvixSpacing.md),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: FinvixRadius.radiusLg,
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    width: 0.5,
+                  ),
+                ),
+                child: ListTile(
+                  leading: const Icon(Icons.upload_file, color: Colors.blue),
+                  title: Text(
+                    'Export Data',
+                    style: FinvixTypography.titleMedium.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Save as JSON, CSV, or Excel',
+                    style: FinvixTypography.bodySmall.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  onTap: () => _exportData(context, ref),
+                ),
+              ),
+              const SizedBox(height: FinvixSpacing.md),
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: FinvixSpacing.md),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: FinvixRadius.radiusLg,
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    width: 0.5,
+                  ),
+                ),
+                child: ListTile(
+                  leading: const Icon(Icons.download, color: Colors.green),
+                  title: Text(
+                    'Import Data',
+                    style: FinvixTypography.titleMedium.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Restore from JSON, CSV, or Excel',
+                    style: FinvixTypography.bodySmall.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  onTap: () => _importData(context, ref),
+                ),
+              ),
+            ],
           ),
-
-          // Import Data
-          ListTile(
-            leading: const Icon(Icons.download, color: Colors.green),
-            title: const Text('Import Data'),
-            subtitle: const Text('Restore from JSON, CSV, or Excel'),
-            onTap: () => _importData(context, ref),
-          ),
-          const Divider(),
+          const SizedBox(height: FinvixSpacing.xxxl),
 
           // About Section
-          const Padding(
-            padding: EdgeInsets.all(16.0),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: FinvixSpacing.lg),
             child: Text(
               'About',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+              style: FinvixTypography.titleMedium.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ),
-          const ListTile(
-            leading: Icon(Icons.info),
-            title: Text('Version'),
-            subtitle: Text('1.1.0 (Build 6)'),
+          const SizedBox(height: FinvixSpacing.md),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: FinvixSpacing.md),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: FinvixRadius.radiusLg,
+              border: Border.all(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                width: 0.5,
+              ),
+            ),
+            child: ListTile(
+              leading: const Icon(Icons.info),
+              title: Text(
+                'Version',
+                style: FinvixTypography.titleMedium.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+              subtitle: Text(
+                '1.1.0 (Build 6)',
+                style: FinvixTypography.bodySmall.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
           ),
-          const Divider(),
-          
+          const SizedBox(height: FinvixSpacing.xl),
           // App Description
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -121,7 +267,7 @@ class SettingsScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'About FinExp',
+                  'About Finvix',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
@@ -130,7 +276,7 @@ class SettingsScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'FinExp is your personal finance companion designed to help you track income and expenses effortlessly. With intuitive categorization, group organization, detailed analytics, and powerful filtering options, take control of your financial journey.',
+                  'Finvix is your personal finance companion designed to help you track income and expenses effortlessly. With intuitive categorization, group organization, detailed analytics, and powerful filtering options, take control of your financial journey.',
                   style: TextStyle(
                     fontSize: 13,
                     color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
@@ -170,7 +316,7 @@ class SettingsScreen extends ConsumerWidget {
           
           ListTile(
             leading: Icon(Icons.copyright, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
-            title: const Text('© 2026 FinExp'),
+            title: const Text('© 2026 Finvix'),
             subtitle: const Text('All rights reserved'),
           ),
         ],
@@ -463,7 +609,7 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   const Text(
-                    'Make sure the file is a valid FinExp backup file.',
+                    'Make sure the file is a valid Finvix backup file.',
                     style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
                   ),
                 ],
@@ -500,7 +646,7 @@ class SettingsScreen extends ConsumerWidget {
                 Text('Error: $e', style: const TextStyle(fontSize: 12)),
                 const SizedBox(height: 16),
                 const Text(
-                  'Please check that you selected a valid FinExp backup file.',
+                  'Please check that you selected a valid Finvix backup file.',
                   style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
                 ),
               ],

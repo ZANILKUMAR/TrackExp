@@ -1,4 +1,4 @@
-# 💰 TrackExp - Personal Finance Tracker
+# 💰 Finvix - Personal Finance Tracker
 
 > A complete, production-ready offline-first Flutter mobile application for tracking personal finances.
 
@@ -8,7 +8,7 @@
 
 ## 🎯 Overview
 
-TrackExp is a comprehensive personal finance tracker that helps you manage your income and expenses, visualize spending patterns, and maintain complete control over your financial data - all without requiring an internet connection or backend server.
+Finvix is a comprehensive personal finance tracker that helps you manage your income and expenses, visualize spending patterns, and maintain complete control over your financial data - all without requiring an internet connection or backend server.
 
 ## ✨ Features
 
@@ -136,7 +136,7 @@ flutter build ios --release
 
 ## 🏗️ Architecture
 
-TrackExp follows **Clean Architecture** principles with clear separation of concerns:
+Finvix follows **Clean Architecture** principles with clear separation of concerns:
 
 ```
 UI (Screens/Widgets)
