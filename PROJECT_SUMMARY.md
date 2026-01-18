@@ -1,8 +1,8 @@
-# TrackExp - Project Summary
+# Finvix - Project Summary
 
 ## 📌 Project Overview
 
-**TrackExp** is a complete, production-ready Flutter mobile application for personal finance tracking. It's built with an offline-first architecture, ensuring all data stays local on the user's device with no backend dependency.
+**Finvix** is a complete, production-ready Flutter mobile application for personal finance tracking. It's built with an offline-first architecture, ensuring all data stays local on the user's device with no backend dependency.
 
 ---
 
@@ -415,7 +415,7 @@ The project demonstrates:
 
 ## 🎉 Conclusion
 
-TrackExp is a **complete, production-ready** personal finance tracking application that demonstrates best practices in Flutter development. It's built with a strong focus on:
+Finvix is a **complete, production-ready** personal finance tracking application that demonstrates best practices in Flutter development. It's built with a strong focus on:
 
 - **User Experience**: Simple, intuitive interface
 - **Performance**: Fast, responsive UI

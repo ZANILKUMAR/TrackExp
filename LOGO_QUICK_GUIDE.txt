@@ -1,30 +1,31 @@
 ╔══════════════════════════════════════════════════════════════╗
-║                    FinExp Logo Setup                          ║
+║                   Finvix Logo Setup                            ║
 ║                     Quick Guide                               ║
 ╚══════════════════════════════════════════════════════════════╝
 
-📍 STEP 1: SAVE THE LOGO
+📍 STEP 1: SAVE THE FINVIX LOGO
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Save the FinExp logo image as:
+Save the Finvix logo image (blue F + green arrow) as:
 
-    📁 F:\MyProjects\TrackExp\assets\app_icon.png
+    📁 D:\NEW_PROJECTS\TrackExp\assets\app_icon.png
 
 Requirements:
   ✓ Format: PNG with transparent background
-  ✓ Size: 1024x1024 pixels (recommended)
+  ✓ Size: 1024x1024 pixels (recommended minimum)
   ✓ Name: EXACTLY "app_icon.png" (don't change!)
 
 
-📍 STEP 2: GENERATE ICONS
+📍 STEP 2: GENERATE ICONS FOR ALL PLATFORMS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Run this command in PowerShell:
 
+    cd D:\NEW_PROJECTS\TrackExp
     flutter pub run flutter_launcher_icons
 
-This generates icons for ALL platforms automatically:
-  ✅ Android
-  ✅ iOS  
-  ✅ Web
+This generates app icons for ALL platforms automatically:
+  ✅ Android (mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi)
+  ✅ iOS (all sizes)
+  ✅ Web (favicon + PWA icon)
   ✅ Windows
   ✅ macOS
 

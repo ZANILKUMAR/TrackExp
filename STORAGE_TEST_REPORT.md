@@ -1,4 +1,4 @@
-# FinExp Data Storage & Persistence Test Report
+# Finvix Data Storage & Persistence Test Report
 
 ## ✅ Storage Mechanism Status: **WORKING**
 

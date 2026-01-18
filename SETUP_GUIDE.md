@@ -1,4 +1,4 @@
-# TrackExp - Setup Guide
+# Finvix - Setup Guide
 
 ## 🚀 Quick Start Guide
 

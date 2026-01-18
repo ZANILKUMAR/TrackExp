@@ -9,6 +9,7 @@ import '../providers/transaction_provider.dart';
 import '../providers/category_provider.dart';
 import '../providers/group_provider.dart';
 import '../utils/format_helper.dart';
+import '../constants/design_system.dart';
 
 class AddTransactionScreen extends ConsumerStatefulWidget {
   final Transaction? transaction;
@@ -692,19 +693,29 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.transaction != null ? 'Edit Transaction' : 'Add Transaction'),
+        title: Text(
+          widget.transaction != null ? 'Edit Transaction' : 'Add Transaction',
+          style: FinvixTypography.headlineMedium.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
       ),
       body: Form(
         key: _formKey,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(
+            horizontal: FinvixSpacing.lg,
+            vertical: FinvixSpacing.xl,
+          ),
           children: [
             // Type Selection
-            const Text(
+            Text(
               'Transaction Type',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: FinvixTypography.titleMedium.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: FinvixSpacing.md),
             SegmentedButton<String>(
               segments: const [
                 ButtonSegment(
@@ -726,17 +737,29 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                 });
               },
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: FinvixSpacing.xxxl),
 
             // Amount
+            Text(
+              'Amount',
+              style: FinvixTypography.labelLarge.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: FinvixSpacing.sm),
             TextFormField(
               controller: _amountController,
               focusNode: _amountFocusNode,
-              decoration: const InputDecoration(
-                labelText: 'Amount',
+              decoration: InputDecoration(
                 prefixText: '₹ ',
-                border: OutlineInputBorder(),
                 hintText: '0.00',
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: FinvixSpacing.lg,
+                  vertical: FinvixSpacing.md,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: FinvixRadius.radiusLg,
+                ),
               ),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [
@@ -757,19 +780,31 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                 return null;
               },
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: FinvixSpacing.xl),
 
             // Category
+            Text(
+              'Category',
+              style: FinvixTypography.labelLarge.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: FinvixSpacing.sm),
             Row(
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     initialValue: _selectedCategoryId,
-                    decoration: const InputDecoration(
-                      labelText: 'Category',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      hintText: 'Select a category',
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: FinvixSpacing.lg,
+                        vertical: FinvixSpacing.md,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: FinvixRadius.radiusLg,
+                      ),
                     ),
-                    hint: const Text('Select a category'),
                     isExpanded: true,
                     items: filteredCategories.isEmpty
                         ? null
@@ -791,7 +826,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                                       color: Colors.white,
                                     ),
                                   ),
-                                  const SizedBox(width: 12),
+                                  const SizedBox(width: FinvixSpacing.md),
                                   Text(category.name),
                                 ],
                               ),
@@ -812,29 +847,44 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                     },
                   ),
                 ),
-                const SizedBox(width: 8),
-                IconButton(
-                  onPressed: () => _showAddCategoryDialog(context, ref),
-                  icon: const Icon(Icons.add_circle_outline),
-                  tooltip: 'Add Category',
-                  style: IconButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                const SizedBox(width: FinvixSpacing.md),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.2),
+                    borderRadius: FinvixRadius.radiusLg,
+                  ),
+                  child: IconButton(
+                    onPressed: () => _showAddCategoryDialog(context, ref),
+                    icon: const Icon(Icons.add_circle_outline),
+                    tooltip: 'Add Category',
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: FinvixSpacing.xl),
 
             // Group (Optional)
+            Text(
+              'Group (Optional)',
+              style: FinvixTypography.labelLarge.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: FinvixSpacing.sm),
             Row(
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     value: _selectedGroupId,
-                    decoration: const InputDecoration(
-                      labelText: 'Group (Optional)',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
                       hintText: 'None',
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: FinvixSpacing.lg,
+                        vertical: FinvixSpacing.md,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: FinvixRadius.radiusLg,
+                      ),
                     ),
                     isExpanded: true,
                     items: [
@@ -860,7 +910,7 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                                   color: Colors.white,
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: FinvixSpacing.md),
                               Expanded(
                                 child: Text(
                                   group.name,
@@ -879,28 +929,41 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                     },
                   ),
                 ),
-                const SizedBox(width: 8),
-                IconButton(
-                  onPressed: () => _showAddGroupDialog(context, ref),
-                  icon: const Icon(Icons.add_circle_outline),
-                  tooltip: 'Add Group',
-                  style: IconButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                const SizedBox(width: FinvixSpacing.md),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.2),
+                    borderRadius: FinvixRadius.radiusLg,
+                  ),
+                  child: IconButton(
+                    onPressed: () => _showAddGroupDialog(context, ref),
+                    icon: const Icon(Icons.add_circle_outline),
+                    tooltip: 'Add Group',
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: FinvixSpacing.xl),
 
             // Date
+            Text(
+              'Date',
+              style: FinvixTypography.labelLarge.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: FinvixSpacing.sm),
             InkWell(
               onTap: () => _selectDate(context),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: FinvixRadius.radiusLg,
               child: Container(
-                padding: const EdgeInsets.all(16),
+                padding: FinvixSpacing.paddingLg,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Theme.of(context).colorScheme.outline),
+                  borderRadius: FinvixRadius.radiusLg,
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline,
+                    width: 0.5,
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -909,18 +972,9 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Date',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
                             FormatHelper.formatDate(_selectedDate),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
+                            style: FinvixTypography.titleMedium.copyWith(
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                         ],
@@ -929,23 +983,37 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                     Icon(
                       Icons.calendar_today,
                       color: Theme.of(context).colorScheme.primary,
+                      size: 20,
                     ),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: FinvixSpacing.xl),
 
             // Notes
+            Text(
+              'Notes (optional)',
+              style: FinvixTypography.labelLarge.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: FinvixSpacing.sm),
             TextFormField(
               controller: _notesController,
-              decoration: const InputDecoration(
-                labelText: 'Notes (optional)',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                hintText: 'Add any notes about this transaction',
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: FinvixSpacing.lg,
+                  vertical: FinvixSpacing.md,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: FinvixRadius.radiusLg,
+                ),
               ),
               maxLines: 3,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: FinvixSpacing.xxxl),
 
             // Save Buttons
             if (widget.transaction == null) ...[
@@ -953,23 +1021,26 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
               ElevatedButton.icon(
                 onPressed: () => _saveTransaction(closeAfterSave: false),
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.all(16),
+                  padding: FinvixSpacing.paddingLg,
                   backgroundColor: Theme.of(context).colorScheme.secondary,
                   foregroundColor: Theme.of(context).colorScheme.onSecondary,
                 ),
                 icon: const Icon(Icons.add),
                 label: const Text('Save & Add Another'),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: FinvixSpacing.lg),
             ],
             ElevatedButton(
               onPressed: () => _saveTransaction(closeAfterSave: true),
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.all(16),
+                padding: FinvixSpacing.paddingLg,
                 backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Theme.of(context).colorScheme.onPrimary,
               ),
-              child: Text(widget.transaction != null ? 'Update Transaction' : 'Save & Close'),
+              child: Text(
+                widget.transaction != null ? 'Update Transaction' : 'Save & Close',
+                style: FinvixTypography.titleMedium,
+              ),
             ),
           ],
         ),

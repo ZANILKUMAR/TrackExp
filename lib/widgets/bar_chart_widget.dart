@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../providers/transaction_provider.dart';
 import '../utils/format_helper.dart';
+import '../constants/design_system.dart';
 
 class BarChartWidget extends ConsumerWidget {
   final DateTime currentMonth;
@@ -40,37 +41,43 @@ class BarChartWidget extends ConsumerWidget {
     final interval = maxY == 0 ? 200.0 : maxY / 5;
 
     return SizedBox(
-      height: 200,
-      child: BarChart(
-        BarChartData(
-          alignment: BarChartAlignment.spaceEvenly,
-          maxY: adjustedMaxY,
-          groupsSpace: 24,
-          barTouchData: BarTouchData(
-            enabled: true,
-            touchTooltipData: BarTouchTooltipData(
-              getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                final month = monthsData[group.x.toInt()].month;
-                final value = rod.toY;
-                final type = rodIndex == 0 ? 'Income' : 'Expense';
-                return BarTooltipItem(
-                  '$type\n${FormatHelper.getMonthName(month.month)}\n',
-                  const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
-                  ),
-                  children: [
-                    TextSpan(
-                      text: FormatHelper.formatCurrency(value),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                      ),
+      height: 250,
+      child: Container(
+        padding: FinvixSpacing.paddingMd,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.5),
+          borderRadius: FinvixRadius.radiusLg,
+        ),
+        child: BarChart(
+          BarChartData(
+            alignment: BarChartAlignment.spaceEvenly,
+            maxY: adjustedMaxY,
+            groupsSpace: 24,
+            barTouchData: BarTouchData(
+              enabled: true,
+              touchTooltipData: BarTouchTooltipData(
+                getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                  final month = monthsData[group.x.toInt()].month;
+                  final value = rod.toY;
+                  final type = rodIndex == 0 ? 'Income' : 'Expense';
+                  return BarTooltipItem(
+                    '$type\n${FormatHelper.getMonthName(month.month)}\n',
+                    const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
                     ),
-                  ],
-                );
-              },
+                    children: [
+                      TextSpan(
+                        text: FormatHelper.formatCurrency(value),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  );
+                },
             ),
           ),
           titlesData: FlTitlesData(
@@ -162,6 +169,7 @@ class BarChartWidget extends ConsumerWidget {
               ],
             );
           }).toList(),
+          ),
         ),
       ),
     );

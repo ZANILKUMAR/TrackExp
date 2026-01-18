@@ -5,6 +5,7 @@ import '../providers/transaction_provider.dart';
 import '../providers/category_provider.dart';
 import '../providers/group_provider.dart';
 import '../utils/format_helper.dart';
+import '../constants/design_system.dart';
 import 'add_transaction_screen.dart';
 
 class TransactionsListScreen extends ConsumerStatefulWidget {
@@ -28,7 +29,12 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Transactions'),
+        title: Text(
+          'Transactions',
+          style: FinvixTypography.headlineMedium.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_list),
@@ -41,11 +47,17 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
           // Active Filters
           if (typeFilter != null || categoriesFilter.isNotEmpty || dateRange != null || groupFilter != null)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(
+                horizontal: FinvixSpacing.lg,
+                vertical: FinvixSpacing.md,
+              ),
               decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withOpacity(0.05),
+                color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.1),
                 border: Border(
-                  bottom: BorderSide(color: Theme.of(context).dividerColor),
+                  bottom: BorderSide(
+                    color: Theme.of(context).dividerColor,
+                    width: 0.5,
+                  ),
                 ),
               ),
               child: Column(
@@ -56,14 +68,16 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.filter_alt, size: 14, color: Theme.of(context).primaryColor),
-                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.filter_alt,
+                            size: 16,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          const SizedBox(width: FinvixSpacing.sm),
                           Text(
                             'Active Filters',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context).primaryColor,
+                            style: FinvixTypography.labelMedium.copyWith(
+                              color: Theme.of(context).colorScheme.primary,
                             ),
                           ),
                         ],
@@ -77,19 +91,22 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
                           ref.read(selectedGroupFilterProvider.notifier).state = null;
                         },
                         icon: const Icon(Icons.clear_all, size: 14),
-                        label: const Text('Clear All', style: TextStyle(fontSize: 11)),
+                        label: const Text('Clear All'),
                         style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: FinvixSpacing.sm,
+                            vertical: FinvixSpacing.xs,
+                          ),
                           minimumSize: Size.zero,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: FinvixSpacing.md),
                   Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
+                    spacing: FinvixSpacing.md,
+                    runSpacing: FinvixSpacing.md,
                     children: [
                       if (dateRange != null)
                         _buildActiveFilterChip(
@@ -165,34 +182,34 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
             child: transactions.isEmpty
                 ? Center(
                     child: Padding(
-                      padding: const EdgeInsets.all(32.0),
+                      padding: FinvixSpacing.paddingXl,
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(24),
+                            padding: FinvixSpacing.paddingXl,
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
-                              shape: BoxShape.circle,
+                              color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.2),
+                              borderRadius: FinvixRadius.radiusXl,
                             ),
                             child: Icon(
                               Icons.receipt_long,
-                              size: 64,
+                              size: 56,
                               color: Theme.of(context).colorScheme.primary,
                             ),
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: FinvixSpacing.xl),
                           Text(
                             'No transactions found',
-                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
+                            style: FinvixTypography.headlineSmall.copyWith(
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: FinvixSpacing.md),
                           Text(
                             'Add your first transaction to get started',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                            style: FinvixTypography.bodyMedium.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -237,8 +254,11 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
           children: [
             // Date Header
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              color: Theme.of(context).primaryColor.withOpacity(0.05),
+              padding: const EdgeInsets.symmetric(
+                horizontal: FinvixSpacing.lg,
+                vertical: FinvixSpacing.md,
+              ),
+              color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.08),
               child: Row(
                 children: [
                   Icon(
@@ -246,21 +266,18 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
                     size: 16,
                     color: Theme.of(context).colorScheme.primary,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: FinvixSpacing.md),
                   Text(
                     _getRelativeDateLabel(transactionDate),
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
+                    style: FinvixTypography.labelLarge.copyWith(
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: FinvixSpacing.md),
                   Text(
                     dateKey,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                    style: FinvixTypography.labelSmall.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -268,7 +285,6 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
             ),
             // Transactions for this date
             ...dateTransactions.asMap().entries.map((entry) {
-              final index = entry.key;
               final transaction = entry.value;
               final category = categories.firstWhere(
                 (c) => c.id == transaction.categoryId,
@@ -317,18 +333,23 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
                   );
                 },
                 child: Container(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: FinvixSpacing.md,
+                    vertical: FinvixSpacing.xs,
+                  ),
                   decoration: BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: index == dateTransactions.length - 1
-                            ? Theme.of(context).colorScheme.surfaceContainerHighest
-                            : Theme.of(context).colorScheme.surface,
-                        width: index == dateTransactions.length - 1 ? 1 : 0.5,
-                      ),
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: FinvixRadius.radiusLg,
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      width: 0.5,
                     ),
                   ),
                   child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: FinvixSpacing.lg,
+                      vertical: FinvixSpacing.sm,
+                    ),
                     leading: CircleAvatar(
                       backgroundColor: category.colorValue != null
                           ? Color(category.colorValue!)
@@ -343,17 +364,15 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
                     ),
                     title: Text(
                       category.name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
+                      style: FinvixTypography.titleMedium.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     subtitle: transaction.notes != null
                         ? Text(
                             transaction.notes!,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                            style: FinvixTypography.bodySmall.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -364,13 +383,11 @@ class _TransactionsListScreenState extends ConsumerState<TransactionsListScreen>
                       children: [
                         Text(
                           '${transaction.type == 'income' ? '+' : '-'} ${FormatHelper.formatCurrency(transaction.amount)}',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                          style: FinvixTypography.titleMedium.copyWith(
                             color: transaction.type == 'income' ? Colors.green : Colors.red,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: FinvixSpacing.md),
                         IconButton(
                           icon: const Icon(Icons.delete_outline, size: 20),
                           color: Colors.red.shade400,

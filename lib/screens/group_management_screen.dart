@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import '../models/group.dart';
 import '../providers/group_provider.dart';
 import '../providers/transaction_provider.dart';
+import '../constants/design_system.dart';
 
 class GroupManagementScreen extends ConsumerWidget {
   const GroupManagementScreen({super.key});
@@ -15,7 +16,12 @@ class GroupManagementScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Manage Groups'),
+        title: Text(
+          'Manage Groups',
+          style: FinvixTypography.headlineMedium.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -28,45 +34,36 @@ class GroupManagementScreen extends ConsumerWidget {
           if (groups.isEmpty) {
             return Center(
               child: Padding(
-                padding: const EdgeInsets.all(32.0),
+                padding: FinvixSpacing.paddingXl,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(24),
+                      padding: FinvixSpacing.paddingXl,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
-                        shape: BoxShape.circle,
+                        color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.2),
+                        borderRadius: FinvixRadius.radiusXl,
                       ),
                       child: Icon(
                         Icons.folder_open,
-                        size: 64,
+                        size: 56,
                         color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: FinvixSpacing.xl),
                     Text(
                       'No groups yet',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
+                      style: FinvixTypography.headlineSmall.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: FinvixSpacing.md),
                     Text(
-                      'Create groups to organize your expenses',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      'Create a group to organize your expenses',
+                      style: FinvixTypography.bodyMedium.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                       textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton.icon(
-                      onPressed: () => _showAddEditGroupDialog(context, ref),
-                      icon: const Icon(Icons.add),
-                      label: const Text('Create First Group'),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      ),
                     ),
                   ],
                 ),
@@ -75,7 +72,10 @@ class GroupManagementScreen extends ConsumerWidget {
           }
 
           return ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.symmetric(
+              horizontal: FinvixSpacing.md,
+              vertical: FinvixSpacing.lg,
+            ),
             itemCount: groups.length,
             itemBuilder: (context, index) {
               final group = groups[index];
@@ -87,17 +87,18 @@ class GroupManagementScreen extends ConsumerWidget {
                 (sum, t) => sum + (t.type == 'expense' ? t.amount : 0),
               );
 
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                elevation: 3,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+              return Container(
+                margin: const EdgeInsets.only(bottom: FinvixSpacing.md),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: FinvixRadius.radiusLg,
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    width: 0.5,
+                  ),
                 ),
                 child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
+                  contentPadding: FinvixSpacing.paddingLg,
                   leading: CircleAvatar(
                     radius: 24,
                     backgroundColor: group.colorValue != null
@@ -113,9 +114,8 @@ class GroupManagementScreen extends ConsumerWidget {
                   ),
                   title: Text(
                     group.name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                    style: FinvixTypography.titleMedium.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   subtitle: Column(
@@ -123,7 +123,7 @@ class GroupManagementScreen extends ConsumerWidget {
                     children: [
                       if (group.description != null && group.description!.isNotEmpty)
                         Padding(
-                          padding: const EdgeInsets.only(top: 4),
+                          padding: const EdgeInsets.only(top: FinvixSpacing.sm),
                           child: Text(
                             group.description!,
                             style: TextStyle(

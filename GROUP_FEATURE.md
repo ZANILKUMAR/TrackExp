@@ -1,7 +1,7 @@
 # Group Feature Implementation
 
 ## Overview
-The Group feature has been successfully added to the TrackExp expense tracking application. This feature allows users to organize their transactions into logical groups (e.g., "Tour Expenses", "Wedding Expenses", "Project Budget") for better expense management and tracking.
+The Group feature has been successfully added to the Finvix expense tracking application. This feature allows users to organize their transactions into logical groups (e.g., "Tour Expenses", "Wedding Expenses", "Project Budget") for better expense management and tracking.
 
 ## What's New
 

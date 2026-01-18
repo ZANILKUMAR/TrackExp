@@ -7,6 +7,7 @@ import '../widgets/summary_card.dart';
 import '../widgets/pie_chart_widget.dart';
 import '../widgets/bar_chart_widget.dart';
 import '../widgets/recent_transactions_widget.dart';
+import '../constants/design_system.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -25,20 +26,12 @@ class DashboardScreen extends ConsumerWidget {
       appBar: AppBar(
         titleSpacing: 0,
         title: Padding(
-          padding: const EdgeInsets.only(left: 16.0),
-          child: Image.asset(
-            'assets/logo.png',
-            height: 120,
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) {
-              return const Text(
-                'FinExp',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              );
-            },
+          padding: const EdgeInsets.only(left: FinvixSpacing.lg),
+          child: Text(
+            'Finvix',
+            style: FinvixTypography.headlineMedium.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
           ),
         ),
         actions: [
@@ -52,11 +45,13 @@ class DashboardScreen extends ConsumerWidget {
             },
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            padding: const EdgeInsets.symmetric(horizontal: FinvixSpacing.md),
             child: Center(
               child: Text(
                 FormatHelper.formatMonthYear(currentMonth),
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: FinvixTypography.titleMedium.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
             ),
           ),
@@ -73,12 +68,22 @@ class DashboardScreen extends ConsumerWidget {
       ),
       body: Column(
         children: [
-          // Tagline Banner
+          // Tagline Banner - Modern Design
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            padding: const EdgeInsets.symmetric(
+              vertical: FinvixSpacing.md,
+              horizontal: FinvixSpacing.lg,
+            ),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+              gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.2),
+                  Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.05),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               border: Border(
                 bottom: BorderSide(
                   color: Theme.of(context).dividerColor,
@@ -89,84 +94,92 @@ class DashboardScreen extends ConsumerWidget {
             child: Text(
               'Track Smarter, Spend Better',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 11,
+              style: FinvixTypography.bodySmall.copyWith(
                 fontStyle: FontStyle.italic,
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
           ),
           // Main Content
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(
+                horizontal: FinvixSpacing.lg,
+                vertical: FinvixSpacing.xl,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Summary Cards
+                  // Summary Cards - Improved Spacing & Layout
                   Row(
-              children: [
-                Expanded(
-                  child: SummaryCard(
-                    title: 'Income',
-                    amount: monthlyIncome,
-                    color: Colors.green,
-                    icon: Icons.arrow_upward,
+                    children: [
+                      Expanded(
+                        child: SummaryCard(
+                          title: 'Income',
+                          amount: monthlyIncome,
+                          color: Colors.green,
+                          icon: Icons.arrow_upward,
+                        ),
+                      ),
+                      const SizedBox(width: FinvixSpacing.lg),
+                      Expanded(
+                        child: SummaryCard(
+                          title: 'Expense',
+                          amount: monthlyExpense,
+                          color: Colors.red,
+                          icon: Icons.arrow_downward,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: SummaryCard(
-                    title: 'Expense',
-                    amount: monthlyExpense,
-                    color: Colors.red,
-                    icon: Icons.arrow_downward,
+                  const SizedBox(height: FinvixSpacing.lg),
+                  SummaryCard(
+                    title: 'Savings',
+                    amount: monthlySavings,
+                    color: monthlySavings >= 0 ? Colors.blue : Colors.orange,
+                    icon: Icons.account_balance_wallet,
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            SummaryCard(
-              title: 'Savings',
-              amount: monthlySavings,
-              color: monthlySavings >= 0 ? Colors.blue : Colors.orange,
-              icon: Icons.account_balance_wallet,
-            ),
-            const SizedBox(height: 24),
+                  const SizedBox(height: FinvixSpacing.xxxl),
 
-            // Category-wise Spending Pie Chart
-            if (categorySpending.isNotEmpty) ...[
-              const Text(
-                'Category-wise Spending',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              PieChartWidget(
-                categorySpending: categorySpending,
-                categories: categories,
-              ),
-              const SizedBox(height: 24),
-            ],
+                  // Category-wise Spending Pie Chart - Modern Section Header
+                  if (categorySpending.isNotEmpty) ...[
+                    Text(
+                      'Category-wise Spending',
+                      style: FinvixTypography.headlineSmall.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: FinvixSpacing.xl),
+                    PieChartWidget(
+                      categorySpending: categorySpending,
+                      categories: categories,
+                    ),
+                    const SizedBox(height: FinvixSpacing.xxxl),
+                  ],
 
-            // Monthly Trend Bar Chart
-            const Text(
-              'Last 6 Months Trend',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            BarChartWidget(currentMonth: currentMonth),
-            const SizedBox(height: 24),
+                  // Monthly Trend Bar Chart - Modern Section Header
+                  Text(
+                    'Last 6 Months Trend',
+                    style: FinvixTypography.headlineSmall.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: FinvixSpacing.xl),
+                  BarChartWidget(currentMonth: currentMonth),
+                  const SizedBox(height: FinvixSpacing.xxxl),
 
-            // Recent Transactions
-            const Text(
-              'Recent Transactions',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            RecentTransactionsWidget(
-              transactions: monthlyTransactions.take(5).toList(),
-              categories: categories,
-            ),
+                  // Recent Transactions - Modern Section Header
+                  Text(
+                    'Recent Transactions',
+                    style: FinvixTypography.headlineSmall.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: FinvixSpacing.xl),
+                  RecentTransactionsWidget(
+                    transactions: monthlyTransactions.take(5).toList(),
+                    categories: categories,
+                  ),
                 ],
               ),
             ),
