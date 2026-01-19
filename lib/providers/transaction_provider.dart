@@ -83,38 +83,63 @@ final monthlyTransactionsProvider = Provider<List<Transaction>>((ref) {
     ..sort((a, b) => b.date.compareTo(a.date));
 });
 
-final monthlyIncomeProvider = Provider<double>((ref) {
+/// Consolidated monthly summary - single calculation for all metrics
+class MonthlySummary {
+  final double income;
+  final double expense;
+  final double savings;
+  final Map<String, double> categorySpending;
+
+  MonthlySummary({
+    required this.income,
+    required this.expense,
+    required this.savings,
+    required this.categorySpending,
+  });
+}
+
+final monthlySummaryProvider = Provider<MonthlySummary>((ref) {
   final transactions = ref.watch(monthlyTransactionsProvider);
-  return transactions
-      .where((t) => t.type == 'income')
-      .fold(0.0, (sum, t) => sum + t.amount);
+  
+  double income = 0;
+  double expense = 0;
+  final Map<String, double> categoryTotals = {};
+  
+  // Single pass through transactions - calculates all metrics
+  for (var transaction in transactions) {
+    if (transaction.type == 'income') {
+      income += transaction.amount;
+    } else if (transaction.type == 'expense') {
+      expense += transaction.amount;
+      categoryTotals[transaction.categoryId] = 
+          (categoryTotals[transaction.categoryId] ?? 0) + transaction.amount;
+    }
+  }
+  
+  return MonthlySummary(
+    income: income,
+    expense: expense,
+    savings: income - expense,
+    categorySpending: categoryTotals,
+  );
+});
+
+// Derived providers for backward compatibility
+final monthlyIncomeProvider = Provider<double>((ref) {
+  return ref.watch(monthlySummaryProvider).income;
 });
 
 final monthlyExpenseProvider = Provider<double>((ref) {
-  final transactions = ref.watch(monthlyTransactionsProvider);
-  return transactions
-      .where((t) => t.type == 'expense')
-      .fold(0.0, (sum, t) => sum + t.amount);
+  return ref.watch(monthlySummaryProvider).expense;
 });
 
 final monthlySavingsProvider = Provider<double>((ref) {
-  final income = ref.watch(monthlyIncomeProvider);
-  final expense = ref.watch(monthlyExpenseProvider);
-  return income - expense;
+  return ref.watch(monthlySummaryProvider).savings;
 });
 
-// Category-wise spending for pie chart
+// Category-wise spending for pie chart - derived from consolidated summary
 final categoryWiseSpendingProvider = Provider<Map<String, double>>((ref) {
-  final transactions = ref.watch(monthlyTransactionsProvider);
-  final expenseTransactions = transactions.where((t) => t.type == 'expense');
-  
-  final Map<String, double> categoryTotals = {};
-  for (var transaction in expenseTransactions) {
-    categoryTotals[transaction.categoryId] = 
-        (categoryTotals[transaction.categoryId] ?? 0) + transaction.amount;
-  }
-  
-  return categoryTotals;
+  return ref.watch(monthlySummaryProvider).categorySpending;
 });
 
 class TransactionNotifier extends StateNotifier<AsyncValue<List<Transaction>>> {

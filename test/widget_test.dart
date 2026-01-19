@@ -14,8 +14,10 @@ void main() {
   testWidgets('App launches and shows Finvix branding', (WidgetTester tester) async {
     // Build our app wrapped with ProviderScope and trigger a frame.
     await tester.pumpWidget(
-      const ProviderScope(
-        child: MyApp(),
+      ProviderScope(
+        child: MyApp(
+          initializationFuture: Future.value(),
+        ),
       ),
     );
 
