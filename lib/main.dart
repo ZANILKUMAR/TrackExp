@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'repositories/database_service.dart';
 import 'services/theme_service.dart';
 import 'services/app_lock_service.dart';
@@ -11,10 +12,25 @@ import 'screens/add_transaction_screen.dart';
 import 'screens/transactions_list_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/lock_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  // Quick initialization only
+  await Hive.initFlutter();
+  
+  runApp(
+    ProviderScope(
+      child: MyApp(
+        initializationFuture: _initializeServices(),
+      ),
+    ),
+  );
+}
+
+/// Initialize all services in the background
+Future<void> _initializeServices() async {
   // Initialize Hive database
   await DatabaseService.init();
   
@@ -23,16 +39,15 @@ void main() async {
   
   // Initialize app lock service
   await AppLockService.instance.init();
-  
-  runApp(
-    const ProviderScope(
-      child: MyApp(),
-    ),
-  );
 }
 
 class MyApp extends ConsumerWidget {
-  const MyApp({super.key});
+  final Future<void> initializationFuture;
+
+  const MyApp({
+    super.key,
+    required this.initializationFuture,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -44,7 +59,9 @@ class MyApp extends ConsumerWidget {
       theme: _buildLightTheme(),
       darkTheme: _buildDarkTheme(),
       themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      home: const MainScreen(),
+      home: _AppInitWrapper(
+        initializationFuture: initializationFuture,
+      ),
     );
   }
   
@@ -886,5 +903,49 @@ class _MainScreenState extends ConsumerState<MainScreen> with WidgetsBindingObse
         ],
       ),
     );
+  }
+}
+/// Wrapper widget that shows splash screen during initialization
+class _AppInitWrapper extends StatefulWidget {
+  final Future<void> initializationFuture;
+
+  const _AppInitWrapper({
+    required this.initializationFuture,
+  });
+
+  @override
+  State<_AppInitWrapper> createState() => _AppInitWrapperState();
+}
+
+class _AppInitWrapperState extends State<_AppInitWrapper> {
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeAndNavigate();
+  }
+
+  Future<void> _initializeAndNavigate() async {
+    await widget.initializationFuture;
+    if (mounted) {
+      setState(() {
+        _isInitialized = true;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _isInitialized
+        ? const MainScreen()
+        : SplashScreen(
+            initializationFuture: widget.initializationFuture,
+            onInitComplete: () {
+              setState(() {
+                _isInitialized = true;
+              });
+            },
+          );
   }
 }

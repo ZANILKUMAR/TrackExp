@@ -10,7 +10,8 @@ class DatabaseService {
 
   // Initialize Hive
   static Future<void> init() async {
-    await Hive.initFlutter();
+    // Hive.initFlutter() is already called in main.dart
+    // Do NOT call it again here to avoid duplicate initialization
     
     // Register adapters
     Hive.registerAdapter(CategoryAdapter());

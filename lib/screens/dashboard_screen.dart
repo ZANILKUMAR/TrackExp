@@ -7,6 +7,7 @@ import '../widgets/summary_card.dart';
 import '../widgets/pie_chart_widget.dart';
 import '../widgets/bar_chart_widget.dart';
 import '../widgets/recent_transactions_widget.dart';
+import '../widgets/skeleton_loaders.dart';
 import '../constants/design_system.dart';
 
 class DashboardScreen extends ConsumerWidget {
@@ -15,12 +16,23 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentMonth = ref.watch(currentMonthProvider);
+    
+    // Watch transactions stream
+    final transactionsAsync = ref.watch(transactionsProvider);
+    
+    // Get all the computed data
     final monthlyIncome = ref.watch(monthlyIncomeProvider);
     final monthlyExpense = ref.watch(monthlyExpenseProvider);
     final monthlySavings = ref.watch(monthlySavingsProvider);
     final categorySpending = ref.watch(categoryWiseSpendingProvider);
     final categories = ref.watch(categoriesProvider).value ?? [];
     final monthlyTransactions = ref.watch(monthlyTransactionsProvider);
+    
+    // Check if data is loading or empty
+    final isLoading = transactionsAsync.isLoading;
+    
+    // Show skeleton only if loading. Once data arrives (even if empty), show real widgets
+    final shouldShowSkeleton = isLoading;
 
     return Scaffold(
       appBar: AppBar(
@@ -133,54 +145,79 @@ class DashboardScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Summary Cards - Improved Spacing & Layout
-                  Row(
-                    children: [
-                      Expanded(
-                        child: SummaryCard(
-                          title: 'Income',
-                          amount: monthlyIncome,
-                          color: FinvixColors.income,
-                          icon: Icons.arrow_upward_rounded,
+                  // Summary Cards - Show skeleton during loading
+                  if (shouldShowSkeleton) ...[
+                    Row(
+                      children: [
+                        Expanded(child: _buildSummaryCardSkeleton()),
+                        const SizedBox(width: FinvixSpacing.sm),
+                        Expanded(child: _buildSummaryCardSkeleton()),
+                      ],
+                    ),
+                    const SizedBox(height: FinvixSpacing.sm),
+                    _buildSummaryCardSkeleton(),
+                  ] else ...[
+                    Row(
+                      children: [
+                        Expanded(
+                          child: SummaryCard(
+                            title: 'Income',
+                            amount: monthlyIncome,
+                            color: FinvixColors.income,
+                            icon: Icons.arrow_upward_rounded,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: FinvixSpacing.sm),
-                      Expanded(
-                        child: SummaryCard(
-                          title: 'Expense',
-                          amount: monthlyExpense,
-                          color: FinvixColors.expense,
-                          icon: Icons.arrow_downward_rounded,
+                        const SizedBox(width: FinvixSpacing.sm),
+                        Expanded(
+                          child: SummaryCard(
+                            title: 'Expense',
+                            amount: monthlyExpense,
+                            color: FinvixColors.expense,
+                            icon: Icons.arrow_downward_rounded,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: FinvixSpacing.sm),
-                  SummaryCard(
-                    title: 'Savings',
-                    amount: monthlySavings,
-                    color: monthlySavings >= 0 ? FinvixColors.savings : FinvixColors.warning,
-                    icon: Icons.account_balance_wallet_rounded,
-                  ),
+                      ],
+                    ),
+                    const SizedBox(height: FinvixSpacing.sm),
+                    SummaryCard(
+                      title: 'Savings',
+                      amount: monthlySavings,
+                      color: monthlySavings >= 0 ? FinvixColors.savings : FinvixColors.warning,
+                      icon: Icons.account_balance_wallet_rounded,
+                    ),
+                  ],
                   const SizedBox(height: FinvixSpacing.xl),
 
-                  // Category-wise Spending Pie Chart - Modern Section Header
-                  if (categorySpending.isNotEmpty) ...[
-                    Text(
-                      'Category-wise Spending',
-                      style: FinvixTypography.headlineSmall.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
+                  // Category-wise Spending Pie Chart
+                  Text(
+                    'Category-wise Spending',
+                    style: FinvixTypography.headlineSmall.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
-                    const SizedBox(height: FinvixSpacing.md),
+                  ),
+                  const SizedBox(height: FinvixSpacing.md),
+                  if (shouldShowSkeleton)
+                    const ChartSkeleton(height: 300)
+                  else if (categorySpending.isNotEmpty)
                     PieChartWidget(
                       categorySpending: categorySpending,
                       categories: categories,
+                    )
+                  else
+                    SizedBox(
+                      height: 200,
+                      child: Center(
+                        child: Text(
+                          'No spending data',
+                          style: FinvixTypography.bodyMedium.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: FinvixSpacing.xl),
-                  ],
+                  const SizedBox(height: FinvixSpacing.xl),
 
-                  // Monthly Trend Bar Chart - Modern Section Header
+                  // Monthly Trend Bar Chart
                   Text(
                     'Last 6 Months Trend',
                     style: FinvixTypography.headlineSmall.copyWith(
@@ -188,10 +225,13 @@ class DashboardScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: FinvixSpacing.md),
-                  BarChartWidget(currentMonth: currentMonth),
+                  if (shouldShowSkeleton)
+                    const ChartSkeleton(height: 250)
+                  else
+                    BarChartWidget(currentMonth: currentMonth),
                   const SizedBox(height: FinvixSpacing.xl),
 
-                  // Recent Transactions - Modern Section Header
+                  // Recent Transactions
                   Text(
                     'Recent Transactions',
                     style: FinvixTypography.headlineSmall.copyWith(
@@ -199,12 +239,65 @@ class DashboardScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: FinvixSpacing.md),
-                  RecentTransactionsWidget(
-                    transactions: monthlyTransactions.take(5).toList(),
-                    categories: categories,
-                  ),
+                  if (shouldShowSkeleton)
+                    Column(
+                      children: List.generate(
+                        3,
+                        (index) => const TransactionItemSkeleton(),
+                      ),
+                    )
+                  else if (monthlyTransactions.isNotEmpty)
+                    RecentTransactionsWidget(
+                      transactions: monthlyTransactions.take(5).toList(),
+                      categories: categories,
+                    )
+                  else
+                    Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(FinvixSpacing.lg),
+                        child: Text(
+                          'No transactions yet',
+                          style: FinvixTypography.bodyMedium.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Build skeleton loader for summary cards
+  Widget _buildSummaryCardSkeleton() {
+    return Container(
+      padding: const EdgeInsets.all(FinvixSpacing.lg),
+      decoration: BoxDecoration(
+        color: Colors.grey[300],
+        borderRadius: FinvixRadius.radiusLg,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 80,
+            height: 16,
+            decoration: BoxDecoration(
+              color: Colors.grey[400],
+              borderRadius: FinvixRadius.radiusSm,
+            ),
+          ),
+          const SizedBox(height: FinvixSpacing.md),
+          Container(
+            width: double.infinity,
+            height: 24,
+            decoration: BoxDecoration(
+              color: Colors.grey[400],
+              borderRadius: FinvixRadius.radiusSm,
             ),
           ),
         ],
