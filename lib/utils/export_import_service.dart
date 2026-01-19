@@ -33,18 +33,18 @@ class ExportImportService {
 
       switch (format) {
         case ExportFormat.json:
-          fileName = 'finexp_backup_${DateTime.now().millisecondsSinceEpoch}.json';
+          fileName = 'finvix_backup_${DateTime.now().millisecondsSinceEpoch}.json';
           data = _exportToJson(categories, transactions);
           mimeType = 'application/json';
           break;
         case ExportFormat.csv:
-          fileName = 'finexp_transactions_${DateTime.now().millisecondsSinceEpoch}.csv';
+          fileName = 'finvix_transactions_${DateTime.now().millisecondsSinceEpoch}.csv';
           data = _exportToCsv(categories, transactions);
           mimeType = 'text/csv';
           break;
         case ExportFormat.excel:
           // For simplicity, we'll use CSV format which Excel can open
-          fileName = 'finexp_transactions_${DateTime.now().millisecondsSinceEpoch}.csv';
+          fileName = 'finvix_transactions_${DateTime.now().millisecondsSinceEpoch}.csv';
           data = _exportToCsv(categories, transactions);
           mimeType = 'text/csv';
           break;
@@ -75,7 +75,7 @@ class ExportImportService {
     final data = {
       'exportDate': DateTime.now().toIso8601String(),
       'version': '1.0',
-      'appName': 'FinExp',
+      'appName': 'Finvix',
       'categories': categories.map((c) => c.toJson()).toList(),
       'transactions': transactions.map((t) => t.toJson()).toList(),
     };

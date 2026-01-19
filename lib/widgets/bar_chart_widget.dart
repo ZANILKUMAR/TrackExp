@@ -12,6 +12,7 @@ class BarChartWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final repository = ref.watch(transactionRepositoryProvider);
     
     // Get last 6 months data
@@ -39,40 +40,51 @@ class BarChartWidget extends ConsumerWidget {
     // Handle case when there's no data
     final adjustedMaxY = maxY == 0 ? 1000.0 : maxY * 1.2;
     final interval = maxY == 0 ? 200.0 : maxY / 5;
+    
+    final gridColor = isDark ? FinvixChartStyles.gridLineDark : FinvixChartStyles.gridLine;
+    final textColor = isDark ? FinvixColors.darkTextSecondary : FinvixColors.textSecondary;
 
     return SizedBox(
       height: 250,
       child: Container(
-        padding: FinvixSpacing.paddingMd,
+        padding: const EdgeInsets.all(FinvixSpacing.md),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.5),
+          color: isDark 
+            ? FinvixColors.darkSurfaceDim.withOpacity(0.5) 
+            : FinvixColors.surfaceDim.withOpacity(0.5),
           borderRadius: FinvixRadius.radiusLg,
+          border: Border.all(
+            color: isDark ? Colors.white.withOpacity(0.06) : FinvixColors.outline.withOpacity(0.3),
+            width: 1,
+          ),
         ),
         child: BarChart(
           BarChartData(
             alignment: BarChartAlignment.spaceEvenly,
             maxY: adjustedMaxY,
-            groupsSpace: 24,
+            groupsSpace: 20,
             barTouchData: BarTouchData(
               enabled: true,
               touchTooltipData: BarTouchTooltipData(
+                tooltipRoundedRadius: 8,
+                tooltipPadding: const EdgeInsets.symmetric(
+                  horizontal: FinvixSpacing.md,
+                  vertical: FinvixSpacing.sm,
+                ),
                 getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                  final month = monthsData[group.x.toInt()].month;
                   final value = rod.toY;
                   final type = rodIndex == 0 ? 'Income' : 'Expense';
                   return BarTooltipItem(
-                    '$type\n${FormatHelper.getMonthName(month.month)}\n',
-                    const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
+                    '$type\n',
+                    FinvixTypography.labelSmall.copyWith(
+                      color: Colors.white.withOpacity(0.8),
                     ),
                     children: [
                       TextSpan(
                         text: FormatHelper.formatCurrency(value),
-                        style: const TextStyle(
+                        style: FinvixTypography.labelMedium.copyWith(
                           color: Colors.white,
-                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
@@ -89,47 +101,45 @@ class BarChartWidget extends ConsumerWidget {
                   if (value.toInt() >= 0 && value.toInt() < monthsData.length) {
                     final month = monthsData[value.toInt()].month;
                     return Padding(
-                      padding: const EdgeInsets.only(top: 8),
+                      padding: const EdgeInsets.only(top: FinvixSpacing.sm),
                       child: Text(
                         FormatHelper.getMonthName(month.month).substring(0, 3),
-                        style: const TextStyle(fontSize: 10),
+                        style: FinvixTypography.caption.copyWith(
+                          color: textColor,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     );
                   }
                   return const Text('');
                 },
-                reservedSize: 30,
+                reservedSize: 28,
               ),
             ),
             leftTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
-                reservedSize: 50,
+                reservedSize: 48,
                 getTitlesWidget: (value, meta) {
                   if (value == 0) {
-                    return const Text('0', style: TextStyle(fontSize: 10));
+                    return Text(
+                      '0',
+                      style: FinvixTypography.caption.copyWith(color: textColor),
+                    );
                   }
+                  String text;
                   if (value >= 10000000) {
-                    return Text(
-                      '${(value / 10000000).toStringAsFixed(1)}Cr',
-                      style: const TextStyle(fontSize: 9),
-                    );
-                  }
-                  if (value >= 100000) {
-                    return Text(
-                      '${(value / 100000).toStringAsFixed(0)}L',
-                      style: const TextStyle(fontSize: 9),
-                    );
-                  }
-                  if (value >= 1000) {
-                    return Text(
-                      '${(value / 1000).toStringAsFixed(0)}k',
-                      style: const TextStyle(fontSize: 9),
-                    );
+                    text = '${(value / 10000000).toStringAsFixed(1)}Cr';
+                  } else if (value >= 100000) {
+                    text = '${(value / 100000).toStringAsFixed(0)}L';
+                  } else if (value >= 1000) {
+                    text = '${(value / 1000).toStringAsFixed(0)}k';
+                  } else {
+                    text = value.toInt().toString();
                   }
                   return Text(
-                    value.toInt().toString(),
-                    style: const TextStyle(fontSize: 9),
+                    text,
+                    style: FinvixTypography.caption.copyWith(color: textColor),
                   );
                 },
               ),
@@ -141,29 +151,44 @@ class BarChartWidget extends ConsumerWidget {
             show: true,
             drawVerticalLine: false,
             horizontalInterval: interval,
+            getDrawingHorizontalLine: (value) => FlLine(
+              color: gridColor.withOpacity(0.5),
+              strokeWidth: 1,
+              dashArray: [4, 4],
+            ),
           ),
           borderData: FlBorderData(show: false),
           barGroups: monthsData.asMap().entries.map((entry) {
             return BarChartGroupData(
               x: entry.key,
-              barsSpace: 2,
+              barsSpace: 3,
               barRods: [
                 BarChartRodData(
                   toY: entry.value.income == 0 ? 0.01 : entry.value.income,
-                  color: Colors.green,
-                  width: 8,
+                  color: FinvixChartStyles.barIncome,
+                  width: 10,
                   borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(3),
-                    topRight: Radius.circular(3),
+                    topLeft: Radius.circular(4),
+                    topRight: Radius.circular(4),
+                  ),
+                  backDrawRodData: BackgroundBarChartRodData(
+                    show: true,
+                    toY: adjustedMaxY,
+                    color: FinvixChartStyles.barIncome.withOpacity(0.05),
                   ),
                 ),
                 BarChartRodData(
                   toY: entry.value.expense == 0 ? 0.01 : entry.value.expense,
-                  color: Colors.red,
-                  width: 8,
+                  color: FinvixChartStyles.barExpense,
+                  width: 10,
                   borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(3),
-                    topRight: Radius.circular(3),
+                    topLeft: Radius.circular(4),
+                    topRight: Radius.circular(4),
+                  ),
+                  backDrawRodData: BackgroundBarChartRodData(
+                    show: true,
+                    toY: adjustedMaxY,
+                    color: FinvixChartStyles.barExpense.withOpacity(0.05),
                   ),
                 ),
               ],

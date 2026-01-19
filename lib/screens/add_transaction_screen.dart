@@ -41,6 +41,9 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       _selectedCategoryId = widget.transaction!.categoryId;
       _selectedGroupId = widget.transaction!.groupId;
       _selectedDate = widget.transaction!.date;
+    } else {
+      // Set "Others" as default category for new transactions
+      _selectedCategoryId = _type == 'expense' ? 'exp_10' : 'inc_6';
     }
   }
 
@@ -700,350 +703,406 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
           ),
         ),
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: FinvixSpacing.lg,
-            vertical: FinvixSpacing.xl,
-          ),
-          children: [
-            // Type Selection
-            Text(
-              'Transaction Type',
-              style: FinvixTypography.titleMedium.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: FinvixSpacing.md),
-            SegmentedButton<String>(
-              segments: const [
-                ButtonSegment(
-                  value: 'expense',
-                  label: Text('Expense'),
-                  icon: Icon(Icons.arrow_downward),
-                ),
-                ButtonSegment(
-                  value: 'income',
-                  label: Text('Income'),
-                  icon: Icon(Icons.arrow_upward),
-                ),
-              ],
-              selected: {_type},
-              onSelectionChanged: (Set<String> newSelection) {
-                setState(() {
-                  _type = newSelection.first;
-                  _selectedCategoryId = null; // Reset category when type changes
-                });
-              },
-            ),
-            const SizedBox(height: FinvixSpacing.xxxl),
-
-            // Amount
-            Text(
-              'Amount',
-              style: FinvixTypography.labelLarge.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: FinvixSpacing.sm),
-            TextFormField(
-              controller: _amountController,
-              focusNode: _amountFocusNode,
-              decoration: InputDecoration(
-                prefixText: '₹ ',
-                hintText: '0.00',
-                contentPadding: const EdgeInsets.symmetric(
+      body: Column(
+        children: [
+          // Scrollable Form Content
+          Expanded(
+            child: Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
                   horizontal: FinvixSpacing.lg,
                   vertical: FinvixSpacing.md,
                 ),
-                border: OutlineInputBorder(
-                  borderRadius: FinvixRadius.radiusLg,
-                ),
-              ),
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [
-                LengthLimitingTextInputFormatter(10),
-                FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
-              ],
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter an amount';
-                }
-                if (double.tryParse(value) == null) {
-                  return 'Please enter a valid number';
-                }
-                final amount = double.parse(value);
-                if (amount <= 0) {
-                  return 'Amount must be greater than 0';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: FinvixSpacing.xl),
-
-            // Category
-            Text(
-              'Category',
-              style: FinvixTypography.labelLarge.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: FinvixSpacing.sm),
-            Row(
-              children: [
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    initialValue: _selectedCategoryId,
-                    decoration: InputDecoration(
-                      hintText: 'Select a category',
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: FinvixSpacing.lg,
-                        vertical: FinvixSpacing.md,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: FinvixRadius.radiusLg,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Type Selection
+                    Text(
+                      'Transaction Type',
+                      style: FinvixTypography.labelLarge.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
-                    isExpanded: true,
-                    items: filteredCategories.isEmpty
-                        ? null
-                        : filteredCategories.map((category) {
-                            return DropdownMenuItem<String>(
-                              value: category.id,
-                              child: Row(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 12,
-                                    backgroundColor: category.colorValue != null
-                                        ? Color(category.colorValue!)
-                                        : Theme.of(context).colorScheme.secondary,
-                                    child: Icon(
-                                      category.iconCodePoint != null
-                                          ? IconData(category.iconCodePoint!, fontFamily: 'MaterialIcons')
-                                          : Icons.category,
-                                      size: 14,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  const SizedBox(width: FinvixSpacing.md),
-                                  Text(category.name),
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                    onChanged: filteredCategories.isEmpty
-                        ? null
-                        : (value) {
-                            setState(() {
-                              _selectedCategoryId = value;
-                            });
-                          },
-                    validator: (value) {
-                      if (value == null) {
-                        return 'Please select a category';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-                const SizedBox(width: FinvixSpacing.md),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.2),
-                    borderRadius: FinvixRadius.radiusLg,
-                  ),
-                  child: IconButton(
-                    onPressed: () => _showAddCategoryDialog(context, ref),
-                    icon: const Icon(Icons.add_circle_outline),
-                    tooltip: 'Add Category',
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: FinvixSpacing.xl),
-
-            // Group (Optional)
-            Text(
-              'Group (Optional)',
-              style: FinvixTypography.labelLarge.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: FinvixSpacing.sm),
-            Row(
-              children: [
-                Expanded(
-                  child: DropdownButtonFormField<String>(
-                    value: _selectedGroupId,
-                    decoration: InputDecoration(
-                      hintText: 'None',
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: FinvixSpacing.lg,
-                        vertical: FinvixSpacing.md,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: FinvixRadius.radiusLg,
-                      ),
+                    const SizedBox(height: FinvixSpacing.sm),
+                    SegmentedButton<String>(
+                      segments: const [
+                        ButtonSegment(
+                          value: 'expense',
+                          label: Text('Expense'),
+                          icon: Icon(Icons.arrow_downward, size: 18),
+                        ),
+                        ButtonSegment(
+                          value: 'income',
+                          label: Text('Income'),
+                          icon: Icon(Icons.arrow_upward, size: 18),
+                        ),
+                      ],
+                      selected: {_type},
+                      onSelectionChanged: (Set<String> newSelection) {
+                        setState(() {
+                          _type = newSelection.first;
+                          // Set "Others" as default category when switching type
+                          _selectedCategoryId = _type == 'expense' ? 'exp_10' : 'inc_6';
+                        });
+                      },
                     ),
-                    isExpanded: true,
-                    items: [
-                      const DropdownMenuItem<String>(
-                        value: null,
-                        child: Text('None'),
-                      ),
-                      ...groups.map((group) {
-                        return DropdownMenuItem<String>(
-                          value: group.id,
-                          child: Row(
+                    const SizedBox(height: FinvixSpacing.lg),
+
+                    // Amount and Date Row
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Amount
+                        Expanded(
+                          flex: 3,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              CircleAvatar(
-                                radius: 12,
-                                backgroundColor: group.colorValue != null
-                                    ? Color(group.colorValue!)
-                                    : Theme.of(context).colorScheme.primary,
-                                child: Icon(
-                                  group.iconCodePoint != null
-                                      ? IconData(group.iconCodePoint!, fontFamily: 'MaterialIcons')
-                                      : Icons.folder,
-                                  size: 14,
-                                  color: Colors.white,
+                              Text(
+                                'Amount',
+                                style: FinvixTypography.labelLarge.copyWith(
+                                  color: Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
-                              const SizedBox(width: FinvixSpacing.md),
-                              Expanded(
-                                child: Text(
-                                  group.name,
-                                  overflow: TextOverflow.ellipsis,
+                              const SizedBox(height: FinvixSpacing.sm),
+                              TextFormField(
+                                controller: _amountController,
+                                focusNode: _amountFocusNode,
+                                decoration: InputDecoration(
+                                  prefixText: '₹ ',
+                                  hintText: '0.00',
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: FinvixSpacing.md,
+                                    vertical: FinvixSpacing.md,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: FinvixRadius.radiusMd,
+                                  ),
+                                ),
+                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                inputFormatters: [
+                                  LengthLimitingTextInputFormatter(10),
+                                  FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                                ],
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Enter amount';
+                                  }
+                                  if (double.tryParse(value) == null) {
+                                    return 'Invalid number';
+                                  }
+                                  final amount = double.parse(value);
+                                  if (amount <= 0) {
+                                    return 'Must be > 0';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: FinvixSpacing.md),
+                        // Date
+                        Expanded(
+                          flex: 2,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Date',
+                                style: FinvixTypography.labelLarge.copyWith(
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                ),
+                              ),
+                              const SizedBox(height: FinvixSpacing.sm),
+                              InkWell(
+                                onTap: () => _selectDate(context),
+                                borderRadius: FinvixRadius.radiusMd,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: FinvixSpacing.md,
+                                    vertical: FinvixSpacing.md,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    borderRadius: FinvixRadius.radiusMd,
+                                    border: Border.all(
+                                      color: Theme.of(context).colorScheme.outline,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.calendar_today,
+                                        color: Theme.of(context).colorScheme.primary,
+                                        size: 16,
+                                      ),
+                                      const SizedBox(width: FinvixSpacing.xs),
+                                      Expanded(
+                                        child: Text(
+                                          FormatHelper.formatShortDate(_selectedDate),
+                                          style: FinvixTypography.bodyMedium.copyWith(
+                                            color: Theme.of(context).colorScheme.onSurface,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ],
                           ),
-                        );
-                      }),
-                    ],
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedGroupId = value;
-                      });
-                    },
-                  ),
-                ),
-                const SizedBox(width: FinvixSpacing.md),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.2),
-                    borderRadius: FinvixRadius.radiusLg,
-                  ),
-                  child: IconButton(
-                    onPressed: () => _showAddGroupDialog(context, ref),
-                    icon: const Icon(Icons.add_circle_outline),
-                    tooltip: 'Add Group',
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: FinvixSpacing.xl),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: FinvixSpacing.lg),
 
-            // Date
-            Text(
-              'Date',
-              style: FinvixTypography.labelLarge.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: FinvixSpacing.sm),
-            InkWell(
-              onTap: () => _selectDate(context),
-              borderRadius: FinvixRadius.radiusLg,
-              child: Container(
-                padding: FinvixSpacing.paddingLg,
-                decoration: BoxDecoration(
-                  borderRadius: FinvixRadius.radiusLg,
-                  border: Border.all(
-                    color: Theme.of(context).colorScheme.outline,
-                    width: 0.5,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            FormatHelper.formatDate(_selectedDate),
-                            style: FinvixTypography.titleMedium.copyWith(
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                          ),
-                        ],
+                    // Category
+                    Text(
+                      'Category',
+                      style: FinvixTypography.labelLarge.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
-                    Icon(
-                      Icons.calendar_today,
-                      color: Theme.of(context).colorScheme.primary,
-                      size: 20,
+                    const SizedBox(height: FinvixSpacing.sm),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            value: _selectedCategoryId,
+                            decoration: InputDecoration(
+                              hintText: 'Select category',
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: FinvixSpacing.md,
+                                vertical: FinvixSpacing.md,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: FinvixRadius.radiusMd,
+                              ),
+                            ),
+                            isExpanded: true,
+                            items: filteredCategories.isEmpty
+                                ? null
+                                : filteredCategories.map((category) {
+                                    return DropdownMenuItem<String>(
+                                      value: category.id,
+                                      child: Row(
+                                        children: [
+                                          CircleAvatar(
+                                            radius: 10,
+                                            backgroundColor: category.colorValue != null
+                                                ? Color(category.colorValue!)
+                                                : Theme.of(context).colorScheme.secondary,
+                                            child: Icon(
+                                              category.iconCodePoint != null
+                                                  ? IconData(category.iconCodePoint!, fontFamily: 'MaterialIcons')
+                                                  : Icons.category,
+                                              size: 12,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                          const SizedBox(width: FinvixSpacing.sm),
+                                          Expanded(
+                                            child: Text(
+                                              category.name,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
+                            onChanged: filteredCategories.isEmpty
+                                ? null
+                                : (value) {
+                                    setState(() {
+                                      _selectedCategoryId = value;
+                                    });
+                                  },
+                            validator: (value) {
+                              if (value == null) {
+                                return 'Select category';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: FinvixSpacing.sm),
+                        IconButton(
+                          onPressed: () => _showAddCategoryDialog(context, ref),
+                          icon: const Icon(Icons.add_circle_outline),
+                          tooltip: 'Add Category',
+                          style: IconButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: FinvixSpacing.lg),
+
+                    // Group (Optional)
+                    Text(
+                      'Group (Optional)',
+                      style: FinvixTypography.labelLarge.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: FinvixSpacing.sm),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            value: _selectedGroupId,
+                            decoration: InputDecoration(
+                              hintText: 'None',
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: FinvixSpacing.md,
+                                vertical: FinvixSpacing.md,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: FinvixRadius.radiusMd,
+                              ),
+                            ),
+                            isExpanded: true,
+                            items: [
+                              const DropdownMenuItem<String>(
+                                value: null,
+                                child: Text('None'),
+                              ),
+                              ...groups.map((group) {
+                                return DropdownMenuItem<String>(
+                                  value: group.id,
+                                  child: Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 10,
+                                        backgroundColor: group.colorValue != null
+                                            ? Color(group.colorValue!)
+                                            : Theme.of(context).colorScheme.primary,
+                                        child: Icon(
+                                          group.iconCodePoint != null
+                                              ? IconData(group.iconCodePoint!, fontFamily: 'MaterialIcons')
+                                              : Icons.folder,
+                                          size: 12,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      const SizedBox(width: FinvixSpacing.sm),
+                                      Expanded(
+                                        child: Text(
+                                          group.name,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }),
+                            ],
+                            onChanged: (value) {
+                              setState(() {
+                                _selectedGroupId = value;
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: FinvixSpacing.sm),
+                        IconButton(
+                          onPressed: () => _showAddGroupDialog(context, ref),
+                          icon: const Icon(Icons.add_circle_outline),
+                          tooltip: 'Add Group',
+                          style: IconButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: FinvixSpacing.lg),
+
+                    // Notes
+                    Text(
+                      'Notes (optional)',
+                      style: FinvixTypography.labelLarge.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: FinvixSpacing.sm),
+                    TextFormField(
+                      controller: _notesController,
+                      decoration: InputDecoration(
+                        hintText: 'Add notes...',
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: FinvixSpacing.md,
+                          vertical: FinvixSpacing.md,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: FinvixRadius.radiusMd,
+                        ),
+                      ),
+                      maxLines: 2,
                     ),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: FinvixSpacing.xl),
-
-            // Notes
-            Text(
-              'Notes (optional)',
-              style: FinvixTypography.labelLarge.copyWith(
-                color: Theme.of(context).colorScheme.onSurface,
+          ),
+          
+          // Fixed Bottom Save Buttons
+          Container(
+            padding: const EdgeInsets.all(FinvixSpacing.lg),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
+            child: SafeArea(
+              top: false,
+              child: Row(
+                children: [
+                  if (widget.transaction == null) ...[
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => _saveTransaction(closeAfterSave: false),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: FinvixSpacing.md),
+                        ),
+                        icon: const Icon(Icons.add, size: 18),
+                        label: const Text('Save & Add'),
+                      ),
+                    ),
+                    const SizedBox(width: FinvixSpacing.md),
+                  ],
+                  Expanded(
+                    flex: widget.transaction == null ? 1 : 2,
+                    child: ElevatedButton(
+                      onPressed: () => _saveTransaction(closeAfterSave: true),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: FinvixSpacing.md),
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                      ),
+                      child: Text(
+                        widget.transaction != null ? 'Update' : 'Save & Close',
+                        style: FinvixTypography.titleMedium,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: FinvixSpacing.sm),
-            TextFormField(
-              controller: _notesController,
-              decoration: InputDecoration(
-                hintText: 'Add any notes about this transaction',
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: FinvixSpacing.lg,
-                  vertical: FinvixSpacing.md,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: FinvixRadius.radiusLg,
-                ),
-              ),
-              maxLines: 3,
-            ),
-            const SizedBox(height: FinvixSpacing.xxxl),
-
-            // Save Buttons
-            if (widget.transaction == null) ...[
-              // Only show "Save & Add Another" for new transactions, not when editing
-              ElevatedButton.icon(
-                onPressed: () => _saveTransaction(closeAfterSave: false),
-                style: ElevatedButton.styleFrom(
-                  padding: FinvixSpacing.paddingLg,
-                  backgroundColor: Theme.of(context).colorScheme.secondary,
-                  foregroundColor: Theme.of(context).colorScheme.onSecondary,
-                ),
-                icon: const Icon(Icons.add),
-                label: const Text('Save & Add Another'),
-              ),
-              const SizedBox(height: FinvixSpacing.lg),
-            ],
-            ElevatedButton(
-              onPressed: () => _saveTransaction(closeAfterSave: true),
-              style: ElevatedButton.styleFrom(
-                padding: FinvixSpacing.paddingLg,
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
-              ),
-              child: Text(
-                widget.transaction != null ? 'Update Transaction' : 'Save & Close',
-                style: FinvixTypography.titleMedium,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
