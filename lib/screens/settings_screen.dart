@@ -6,9 +6,12 @@ import '../utils/export_import_service.dart';
 import '../providers/category_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../providers/theme_provider.dart';
+import '../providers/app_lock_provider.dart';
+import '../services/app_lock_service.dart';
 import '../constants/design_system.dart';
 import 'category_management_screen.dart';
 import 'group_management_screen.dart';
+import 'lock_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -66,6 +69,10 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ),
+          const SizedBox(height: FinvixSpacing.xxxl),
+
+          // Security Section
+          _buildSecuritySection(context, ref),
           const SizedBox(height: FinvixSpacing.xxxl),
 
           // Management Section
@@ -301,6 +308,7 @@ class SettingsScreen extends ConsumerWidget {
                 _buildFeatureItem(context, '🎨 Customizable categories and groups with icons and colors'),
                 _buildFeatureItem(context, '🌙 Dark mode support'),
                 _buildFeatureItem(context, '📱 Offline-first with local data storage'),
+                _buildFeatureItem(context, '🔒 Secure app lock with PIN, Pattern & Biometrics'),
               ],
             ),
           ),
@@ -315,11 +323,449 @@ class SettingsScreen extends ConsumerWidget {
           ),
           
           ListTile(
-            leading: Icon(Icons.copyright, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
+            leading: Icon(Icons.copyright, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)),
             title: const Text('© 2026 Finvix'),
             subtitle: const Text('All rights reserved'),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSecuritySection(BuildContext context, WidgetRef ref) {
+    final lockState = ref.watch(appLockProvider);
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: FinvixSpacing.lg),
+          child: Text(
+            'Security',
+            style: FinvixTypography.titleMedium.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+        ),
+        const SizedBox(height: FinvixSpacing.md),
+        
+        // App Lock Toggle
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: FinvixSpacing.md),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: FinvixRadius.radiusLg,
+            border: Border.all(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              width: 0.5,
+            ),
+          ),
+          child: Column(
+            children: [
+              ListTile(
+                leading: Icon(
+                  lockState.isEnabled ? Icons.lock_rounded : Icons.lock_open_rounded,
+                  color: lockState.isEnabled ? FinvixColors.success : null,
+                ),
+                title: Text(
+                  'App Lock',
+                  style: FinvixTypography.titleMedium.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                subtitle: Text(
+                  lockState.isEnabled
+                      ? 'Enabled (${_getLockTypeName(lockState.lockType)})'
+                      : 'Protect your data',
+                  style: FinvixTypography.bodySmall.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                trailing: Switch(
+                  value: lockState.isEnabled,
+                  onChanged: (value) {
+                    if (value) {
+                      _showLockSetupDialog(context, ref);
+                    } else {
+                      _confirmDisableLock(context, ref);
+                    }
+                  },
+                ),
+              ),
+              
+              if (lockState.isEnabled) ...[
+                const Divider(height: 1),
+                
+                // Change Lock Type
+                ListTile(
+                  leading: const Icon(Icons.security_rounded),
+                  title: Text(
+                    'Change Lock Type',
+                    style: FinvixTypography.titleMedium.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Currently using ${_getLockTypeName(lockState.lockType)}',
+                    style: FinvixTypography.bodySmall.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _showLockSetupDialog(context, ref),
+                ),
+                
+                // Biometric as secondary (if available and not primary)
+                if (lockState.biometricAvailable && 
+                    lockState.lockType != LockType.biometric) ...[
+                  const Divider(height: 1),
+                  ListTile(
+                    leading: Icon(
+                      _getBiometricIcon(lockState),
+                      color: lockState.biometricEnabled ? FinvixColors.success : null,
+                    ),
+                    title: Text(
+                      'Use ${lockState.biometricDisplayName}',
+                      style: FinvixTypography.titleMedium.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    subtitle: Text(
+                      lockState.biometricEnabled
+                          ? 'Enabled as quick unlock'
+                          : 'Quick unlock option',
+                      style: FinvixTypography.bodySmall.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    trailing: Switch(
+                      value: lockState.biometricEnabled,
+                      onChanged: (value) async {
+                        if (value) {
+                          await ref.read(appLockProvider.notifier).enableBiometricSecondary();
+                        } else {
+                          await ref.read(appLockProvider.notifier).disableBiometric();
+                        }
+                      },
+                    ),
+                  ),
+                ],
+                
+                // Auto-lock timeout
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.timer_rounded),
+                  title: Text(
+                    'Auto-lock',
+                    style: FinvixTypography.titleMedium.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  subtitle: Text(
+                    _getAutoLockText(lockState.autoLockMinutes),
+                    style: FinvixTypography.bodySmall.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _showAutoLockDialog(context, ref, lockState.autoLockMinutes),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _getLockTypeName(LockType type) {
+    switch (type) {
+      case LockType.pin:
+        return 'PIN';
+      case LockType.pattern:
+        return 'Pattern';
+      case LockType.biometric:
+        return 'Biometric';
+      case LockType.none:
+        return 'None';
+    }
+  }
+
+  IconData _getBiometricIcon(AppLockState state) {
+    if (state.availableBiometrics.any((b) => b.toString().contains('face'))) {
+      return Icons.face_rounded;
+    }
+    return Icons.fingerprint_rounded;
+  }
+
+  String _getAutoLockText(int minutes) {
+    if (minutes == 0) return 'Immediately';
+    if (minutes == -1) return 'Never';
+    if (minutes == 1) return 'After 1 minute';
+    if (minutes < 60) return 'After $minutes minutes';
+    final hours = minutes ~/ 60;
+    return 'After $hours hour${hours > 1 ? 's' : ''}';
+  }
+
+  void _showLockSetupDialog(BuildContext context, WidgetRef ref) {
+    final lockState = ref.read(appLockProvider);
+    
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(FinvixSpacing.lg),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: FinvixSpacing.lg),
+            Text(
+              'Choose Lock Type',
+              style: FinvixTypography.headlineSmall.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+            const SizedBox(height: FinvixSpacing.lg),
+            
+            // PIN option
+            _buildLockOption(
+              context: context,
+              icon: Icons.pin_rounded,
+              title: 'PIN Lock',
+              subtitle: '4 digit number',
+              onTap: () {
+                Navigator.pop(context);
+                _navigateToLockSetup(context, LockType.pin);
+              },
+            ),
+            
+            const SizedBox(height: FinvixSpacing.md),
+            
+            // Pattern option
+            _buildLockOption(
+              context: context,
+              icon: Icons.pattern_rounded,
+              title: 'Pattern Lock',
+              subtitle: 'Connect at least 4 dots',
+              onTap: () {
+                Navigator.pop(context);
+                _navigateToLockSetup(context, LockType.pattern);
+              },
+            ),
+            
+            // Biometric option (if available)
+            if (lockState.biometricAvailable) ...[
+              const SizedBox(height: FinvixSpacing.md),
+              _buildLockOption(
+                context: context,
+                icon: _getBiometricIcon(lockState),
+                title: lockState.biometricDisplayName,
+                subtitle: 'Use your biometric to unlock',
+                onTap: () async {
+                  Navigator.pop(context);
+                  final success = await ref.read(appLockProvider.notifier).setupBiometricLock();
+                  if (success && context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Biometric lock enabled!')),
+                    );
+                  }
+                },
+              ),
+            ],
+            
+            const SizedBox(height: FinvixSpacing.xl),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLockOption({
+    required BuildContext context,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Theme.of(context).colorScheme.surfaceContainerLow,
+      borderRadius: FinvixRadius.radiusMd,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: FinvixRadius.radiusMd,
+        child: Padding(
+          padding: const EdgeInsets.all(FinvixSpacing.md),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  borderRadius: FinvixRadius.radiusMd,
+                ),
+                child: Icon(
+                  icon,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              const SizedBox(width: FinvixSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: FinvixTypography.titleMedium.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    Text(
+                      subtitle,
+                      style: FinvixTypography.bodySmall.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _navigateToLockSetup(BuildContext context, LockType type) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LockScreen(
+          isSetup: true,
+          setupType: type,
+          onUnlock: () {
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('${_getLockTypeName(type)} lock enabled!')),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  void _confirmDisableLock(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Disable App Lock?'),
+        content: const Text(
+          'Your data will no longer be protected. Anyone with access to your device can view your expenses.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await ref.read(appLockProvider.notifier).disableLock();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('App lock disabled')),
+                );
+              }
+            },
+            style: TextButton.styleFrom(foregroundColor: FinvixColors.error),
+            child: const Text('Disable'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showAutoLockDialog(BuildContext context, WidgetRef ref, int currentMinutes) {
+    final options = [
+      (0, 'Immediately'),
+      (1, '1 minute'),
+      (5, '5 minutes'),
+      (15, '15 minutes'),
+      (30, '30 minutes'),
+      (60, '1 hour'),
+      (-1, 'Never'),
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.5,
+        minChildSize: 0.3,
+        maxChildSize: 0.7,
+        expand: false,
+        builder: (context, scrollController) => SingleChildScrollView(
+          controller: scrollController,
+          padding: const EdgeInsets.all(FinvixSpacing.lg),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: FinvixSpacing.lg),
+              Text(
+                'Auto-lock After',
+                style: FinvixTypography.headlineSmall.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: FinvixSpacing.md),
+              ...options.map((option) => RadioListTile<int>(
+                value: option.$1,
+                groupValue: currentMinutes,
+                title: Text(option.$2),
+                onChanged: (value) async {
+                  if (value != null) {
+                    await ref.read(appLockProvider.notifier).setAutoLockMinutes(value);
+                    if (context.mounted) Navigator.pop(context);
+                  }
+                },
+              )),
+              const SizedBox(height: FinvixSpacing.md),
+            ],
+          ),
+        ),
       ),
     );
   }

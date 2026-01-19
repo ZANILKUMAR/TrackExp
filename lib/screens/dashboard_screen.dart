@@ -27,11 +27,36 @@ class DashboardScreen extends ConsumerWidget {
         titleSpacing: 0,
         title: Padding(
           padding: const EdgeInsets.only(left: FinvixSpacing.lg),
-          child: Text(
-            'Finvix',
-            style: FinvixTypography.headlineMedium.copyWith(
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.asset(
+                  'assets/logo.png',
+                  width: 36,
+                  height: 36,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              const SizedBox(width: 10),
+              ShaderMask(
+                shaderCallback: (bounds) => LinearGradient(
+                  colors: [
+                    Theme.of(context).colorScheme.primary,
+                    Theme.of(context).colorScheme.secondary,
+                  ],
+                ).createShader(bounds),
+                child: Text(
+                  'Finvix',
+                  style: FinvixTypography.headlineMedium.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
         actions: [
@@ -44,14 +69,17 @@ class DashboardScreen extends ConsumerWidget {
               );
             },
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: FinvixSpacing.md),
-            child: Center(
-              child: Text(
-                FormatHelper.formatMonthYear(currentMonth),
-                style: FinvixTypography.titleMedium.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: FinvixSpacing.md, vertical: 6),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              FormatHelper.formatMonthYear(currentMonth),
+              style: FinvixTypography.titleMedium.copyWith(
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.w600,
               ),
             ),
           ),
@@ -68,35 +96,30 @@ class DashboardScreen extends ConsumerWidget {
       ),
       body: Column(
         children: [
-          // Tagline Banner - Modern Design
+          // Tagline Banner
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(
-              vertical: FinvixSpacing.md,
-              horizontal: FinvixSpacing.lg,
+              vertical: FinvixSpacing.xs,
+              horizontal: FinvixSpacing.md,
             ),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.2),
+                  Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.15),
                   Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.05),
                 ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              border: Border(
-                bottom: BorderSide(
-                  color: Theme.of(context).dividerColor,
-                  width: 0.5,
-                ),
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
               ),
             ),
             child: Text(
               'Track Smarter, Spend Better',
               textAlign: TextAlign.center,
-              style: FinvixTypography.bodySmall.copyWith(
+              style: FinvixTypography.labelSmall.copyWith(
                 fontStyle: FontStyle.italic,
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
+                letterSpacing: 0.3,
               ),
             ),
           ),
@@ -104,8 +127,8 @@ class DashboardScreen extends ConsumerWidget {
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(
-                horizontal: FinvixSpacing.lg,
-                vertical: FinvixSpacing.xl,
+                horizontal: FinvixSpacing.md,
+                vertical: FinvixSpacing.md,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,29 +140,29 @@ class DashboardScreen extends ConsumerWidget {
                         child: SummaryCard(
                           title: 'Income',
                           amount: monthlyIncome,
-                          color: Colors.green,
-                          icon: Icons.arrow_upward,
+                          color: FinvixColors.income,
+                          icon: Icons.arrow_upward_rounded,
                         ),
                       ),
-                      const SizedBox(width: FinvixSpacing.lg),
+                      const SizedBox(width: FinvixSpacing.sm),
                       Expanded(
                         child: SummaryCard(
                           title: 'Expense',
                           amount: monthlyExpense,
-                          color: Colors.red,
-                          icon: Icons.arrow_downward,
+                          color: FinvixColors.expense,
+                          icon: Icons.arrow_downward_rounded,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: FinvixSpacing.lg),
+                  const SizedBox(height: FinvixSpacing.sm),
                   SummaryCard(
                     title: 'Savings',
                     amount: monthlySavings,
-                    color: monthlySavings >= 0 ? Colors.blue : Colors.orange,
-                    icon: Icons.account_balance_wallet,
+                    color: monthlySavings >= 0 ? FinvixColors.savings : FinvixColors.warning,
+                    icon: Icons.account_balance_wallet_rounded,
                   ),
-                  const SizedBox(height: FinvixSpacing.xxxl),
+                  const SizedBox(height: FinvixSpacing.xl),
 
                   // Category-wise Spending Pie Chart - Modern Section Header
                   if (categorySpending.isNotEmpty) ...[
@@ -149,12 +172,12 @@ class DashboardScreen extends ConsumerWidget {
                         color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
-                    const SizedBox(height: FinvixSpacing.xl),
+                    const SizedBox(height: FinvixSpacing.md),
                     PieChartWidget(
                       categorySpending: categorySpending,
                       categories: categories,
                     ),
-                    const SizedBox(height: FinvixSpacing.xxxl),
+                    const SizedBox(height: FinvixSpacing.xl),
                   ],
 
                   // Monthly Trend Bar Chart - Modern Section Header
@@ -164,9 +187,9 @@ class DashboardScreen extends ConsumerWidget {
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
-                  const SizedBox(height: FinvixSpacing.xl),
+                  const SizedBox(height: FinvixSpacing.md),
                   BarChartWidget(currentMonth: currentMonth),
-                  const SizedBox(height: FinvixSpacing.xxxl),
+                  const SizedBox(height: FinvixSpacing.xl),
 
                   // Recent Transactions - Modern Section Header
                   Text(
@@ -175,7 +198,7 @@ class DashboardScreen extends ConsumerWidget {
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
-                  const SizedBox(height: FinvixSpacing.xl),
+                  const SizedBox(height: FinvixSpacing.md),
                   RecentTransactionsWidget(
                     transactions: monthlyTransactions.take(5).toList(),
                     categories: categories,

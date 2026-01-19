@@ -80,6 +80,7 @@ class DataPersistenceDebugScreen extends ConsumerWidget {
                   notes: 'Persistence Test Transaction',
                 );
                 await transactionsBox.put(testTransaction.id, testTransaction);
+                if (!context.mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Test transaction added! Restart app to verify persistence.')),
                 );
@@ -93,6 +94,7 @@ class DataPersistenceDebugScreen extends ConsumerWidget {
                 final keys = transactionsBox.keys.toList();
                 if (keys.isNotEmpty) {
                   await transactionsBox.delete(keys.last);
+                  if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Last transaction deleted')),
                   );
